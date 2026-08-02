@@ -10,6 +10,7 @@ import PhysicsRoom from './physics/PhysicsRoom';
 import HUD from '../ui/HUD';
 import ReportModal from '../ui/ReportModal';
 import ExperimentGuideModal from '../ui/ExperimentGuideModal';
+import ZeaiChat from '../ui/ZeaiChat';
 
 const keyMap = [
   { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
@@ -108,6 +109,9 @@ export default function LabScene() {
 
       {/* Pre-Lab Experiment Guide Modal */}
       <ExperimentGuideModal />
+
+      {/* ZEAI AI Lab Mentor Chat */}
+      <ZeaiChat />
 
       {/* Click to lock prompt */}
       {showLockPrompt && (
