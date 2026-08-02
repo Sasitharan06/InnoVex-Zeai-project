@@ -18,7 +18,7 @@ function generateClassroomCode() {
 // ── Local Storage Helpers ──
 function getLocalClassrooms() {
   try {
-    const data = localStorage.getItem('zeai_classrooms');
+    const data = localStorage.getItem('virtulab_classrooms');
     return data ? JSON.parse(data) : [];
   } catch (e) {
     return [];
@@ -34,7 +34,7 @@ function saveLocalClassroom(classroom) {
     } else {
       list.push(classroom);
     }
-    localStorage.setItem('zeai_classrooms', JSON.stringify(list));
+    localStorage.setItem('virtulab_classrooms', JSON.stringify(list));
   } catch (e) {
     console.warn('Failed to save classroom to localStorage:', e);
   }
@@ -42,7 +42,7 @@ function saveLocalClassroom(classroom) {
 
 function getLocalMembers(classroomId) {
   try {
-    const data = localStorage.getItem('zeai_classroom_members');
+    const data = localStorage.getItem('virtulab_classroom_members');
     const members = data ? JSON.parse(data) : [];
     return classroomId ? members.filter(m => m.classroom_id === classroomId) : members;
   } catch (e) {
@@ -56,7 +56,7 @@ function saveLocalMember(member) {
     const exists = list.some(m => m.classroom_id === member.classroom_id && m.student_id === member.student_id);
     if (!exists) {
       list.push(member);
-      localStorage.setItem('zeai_classroom_members', JSON.stringify(list));
+      localStorage.setItem('virtulab_classroom_members', JSON.stringify(list));
     }
   } catch (e) {
     console.warn('Failed to save member to localStorage:', e);
@@ -65,7 +65,7 @@ function saveLocalMember(member) {
 
 function getLocalExperiments(classroomId = null, studentId = null) {
   try {
-    const data = localStorage.getItem('zeai_experiments');
+    const data = localStorage.getItem('virtulab_experiments');
     let exps = data ? JSON.parse(data) : [];
     if (classroomId) exps = exps.filter(e => e.classroom_id === classroomId);
     if (studentId) exps = exps.filter(e => e.student_id === studentId);
@@ -79,7 +79,7 @@ function saveLocalExperiment(exp) {
   try {
     const list = getLocalExperiments();
     list.unshift(exp);
-    localStorage.setItem('zeai_experiments', JSON.stringify(list));
+    localStorage.setItem('virtulab_experiments', JSON.stringify(list));
   } catch (e) {
     console.warn('Failed to save experiment to localStorage:', e);
   }
@@ -190,7 +190,7 @@ export async function getStudentClassroom(studentId) {
 
 export async function createStudent(name, classroomId = null, customEmail = null) {
   const cleanName = name.trim();
-  const email = customEmail?.trim() || `${cleanName.toLowerCase().replace(/\s+/g, '.')}@lab.zeai.in`;
+  const email = customEmail?.trim() || `${cleanName.toLowerCase().replace(/\s+/g, '.')}@lab.virtulab.in`;
   
   try {
     // Check if student exists

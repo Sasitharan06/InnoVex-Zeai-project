@@ -77,7 +77,7 @@ async function callLLM(domain, finalState) {
       'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': window.location.origin,
-      'X-Title': 'ZeAI Virtual Laboratory',
+      'X-Title': 'VirtuLab Virtual Laboratory',
     },
     body: JSON.stringify({
       model: MODEL,

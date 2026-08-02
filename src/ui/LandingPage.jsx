@@ -26,7 +26,7 @@ function useReveal(threshold = 0.15) {
 }
 
 /* ── Single experiment card ── */
-function ExperimentCard({ icon, title, desc, difficulty, index }) {
+function ExperimentCard({ icon, title, desc, difficulty, index, image }) {
   const [ref, visible] = useReveal(0.1);
   const diffColors = {
     easy: { bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.25)', text: '#34d399', label: 'Easy' },
@@ -37,14 +37,20 @@ function ExperimentCard({ icon, title, desc, difficulty, index }) {
   return (
     <div
       ref={ref}
-      className="lp-exp-card"
+      className={`lp-exp-card ${image ? 'lp-exp-card--has-image' : ''}`}
       style={{
         opacity: visible ? 1 : 0,
         transform: visible ? 'translateY(0)' : 'translateY(40px)',
         transitionDelay: `${index * 80}ms`,
       }}
     >
-      <div className="lp-exp-icon">{icon}</div>
+      {image ? (
+        <div className="lp-exp-thumb-wrap">
+          <img src={image} className="lp-exp-thumb" alt={title} />
+        </div>
+      ) : (
+        <div className="lp-exp-icon">{icon}</div>
+      )}
       <div className="lp-exp-body">
         <h4 className="lp-exp-title">{title}</h4>
         <p className="lp-exp-desc">{desc}</p>
@@ -128,25 +134,25 @@ export default function LandingPage() {
   }, []);
 
   const chemExperiments = [
-    { icon: <Beaker size={22} />, title: 'Acid-Base Titration', desc: 'Burette + indicator color change at equivalence point.', difficulty: 'easy' },
-    { icon: <Flame size={22} />, title: 'Flame Test', desc: 'Hold sample near Bunsen burner — flame changes color per metal ion.', difficulty: 'easy' },
-    { icon: <Droplets size={22} />, title: 'pH Testing (Litmus)', desc: 'Dip strip in solution, color changes based on pH value.', difficulty: 'easy' },
-    { icon: <TestTubes size={22} />, title: 'Precipitation Reaction', desc: 'Mix two clear solutions — resulting liquid turns cloudy.', difficulty: 'easy' },
-    { icon: <FlaskConical size={22} />, title: 'Salt Preparation', desc: 'Acid + base neutralization → crystallization on evaporating dish.', difficulty: 'medium' },
-    { icon: <Zap size={22} />, title: 'Electrolysis of Water', desc: 'Electrodes in water — bubbles form, gas tubes fill over time.', difficulty: 'medium' },
-    { icon: <Clock size={22} />, title: 'Iodine Clock Reaction', desc: 'Mix reagents — solution stays clear then suddenly turns blue-black.', difficulty: 'medium' },
-    { icon: <Atom size={22} />, title: 'Distillation Setup', desc: 'Liquid heats → vapor rises → condenses in a separate flask.', difficulty: 'hard' },
+    { icon: <Beaker size={22} />, title: 'Acid-Base Titration', desc: 'Burette + indicator color change at equivalence point.', difficulty: 'easy', image: '/exp_titration.png' },
+    { icon: <Flame size={22} />, title: 'Flame Test', desc: 'Hold sample near Bunsen burner — flame changes color per metal ion.', difficulty: 'easy', image: '/exp_flame.png' },
+    { icon: <Droplets size={22} />, title: 'pH Testing (Litmus)', desc: 'Dip strip in solution, color changes based on pH value.', difficulty: 'easy', image: '/exp_litmus.png' },
+    { icon: <TestTubes size={22} />, title: 'Precipitation Reaction', desc: 'Mix two clear solutions — resulting liquid turns cloudy.', difficulty: 'easy', image: '/exp_precipitation.png' },
+    { icon: <FlaskConical size={22} />, title: 'Salt Preparation', desc: 'Acid + base neutralization → crystallization on evaporating dish.', difficulty: 'medium', image: '/exp_saltprep.png' },
+    { icon: <Zap size={22} />, title: 'Electrolysis of Water', desc: 'Electrodes in water — bubbles form, gas tubes fill over time.', difficulty: 'medium', image: '/exp_electrolysis.png' },
+    { icon: <Clock size={22} />, title: 'Iodine Clock Reaction', desc: 'Mix reagents — solution stays clear then suddenly turns blue-black.', difficulty: 'medium', image: '/exp_iodine.png' },
+    { icon: <Atom size={22} />, title: 'Distillation Setup', desc: 'Liquid heats → vapor rises → condenses in a separate flask.', difficulty: 'hard', image: '/exp_distillation.png' },
   ];
 
   const physExperiments = [
-    { icon: <CircuitBoard size={22} />, title: 'Simple Circuit Building', desc: 'Battery, resistor, LED, switch — assemble on a breadboard.', difficulty: 'easy' },
-    { icon: <Lightbulb size={22} />, title: 'Series vs Parallel', desc: 'Arrange components differently — bulb brightness changes.', difficulty: 'easy' },
-    { icon: <Gauge size={22} />, title: "Ohm's Law Verification", desc: 'Adjust voltage/resistance sliders — ammeter updates, plots V vs I.', difficulty: 'easy' },
-    { icon: <Radio size={22} />, title: 'Simple Pendulum', desc: 'Change length/mass — measure time period with real physics.', difficulty: 'easy' },
-    { icon: <BarChart3 size={22} />, title: 'Ohmic vs Non-Ohmic', desc: 'Swap resistor type — graph curve changes shape.', difficulty: 'medium' },
-    { icon: <Rocket size={22} />, title: 'Projectile Motion', desc: 'Set launch angle/velocity — ball launches, trajectory traced.', difficulty: 'medium' },
-    { icon: <Eye size={22} />, title: "Snell's Law (Refraction)", desc: 'Light ray hits glass block at angle — bends through medium.', difficulty: 'medium' },
-    { icon: <Sparkles size={22} />, title: 'Electromagnetic Induction', desc: 'Magnet moves through coil — galvanometer needle deflects.', difficulty: 'hard' },
+    { icon: <CircuitBoard size={22} />, title: 'Simple Circuit Building', desc: 'Battery, resistor, LED, switch — assemble on a breadboard.', difficulty: 'easy', image: '/exp_simple_circuit.png' },
+    { icon: <Lightbulb size={22} />, title: 'Series vs Parallel', desc: 'Arrange components differently — bulb brightness changes.', difficulty: 'easy', image: '/exp_series_parallel.png' },
+    { icon: <Gauge size={22} />, title: "Ohm's Law Verification", desc: 'Adjust voltage/resistance sliders — ammeter updates, plots V vs I.', difficulty: 'easy', image: '/exp_ohms_law.png' },
+    { icon: <Radio size={22} />, title: 'Simple Pendulum', desc: 'Change length/mass — measure time period with real physics.', difficulty: 'easy', image: '/exp_pendulum.png' },
+    { icon: <BarChart3 size={22} />, title: 'Ohmic vs Non-Ohmic', desc: 'Swap resistor type — graph curve changes shape.', difficulty: 'medium', image: '/exp_ohmic.png' },
+    { icon: <Rocket size={22} />, title: 'Projectile Motion', desc: 'Set launch angle/velocity — ball launches, trajectory traced.', difficulty: 'medium', image: '/exp_projectile.png' },
+    { icon: <Eye size={22} />, title: "Snell's Law (Refraction)", desc: 'Light ray hits glass block at angle — bends through medium.', difficulty: 'medium', image: '/exp_snells_law.png' },
+    { icon: <Sparkles size={22} />, title: 'Electromagnetic Induction', desc: 'Magnet moves through coil — galvanometer needle deflects.', difficulty: 'hard', image: '/exp_induction.png' },
   ];
 
   const features = [
@@ -170,39 +176,38 @@ export default function LandingPage() {
 
         <div className="lp-hero-content">
           <div className="lp-hero-badge">
-            <FlaskConical size={16} /> Virtual Laboratory Platform
+            🏆 AI-POWERED IMMERSIVE STEM EDUCATION PLATFORM
           </div>
           <h1 className="lp-hero-title">
-            <span className="lp-hero-gradient">ZeAI Lab</span>
+            <span className="lp-hero-gradient">VirtuLab</span>
             <br />
-            <span className="lp-hero-sub">Experience Science in 3D</span>
+            <span className="lp-hero-sub">Reimagining Science Education Through AI & Interactive 3D Laboratories</span>
           </h1>
           <p className="lp-hero-desc">
-            Walk through an immersive 3D virtual lab, perform real chemistry &amp; physics experiments,
-            and receive instant AI-powered performance assessments — all inside your browser.
+            VirtuLab is a next-generation AI-powered virtual laboratory that transforms STEM education through immersive 3D simulations. Perform realistic chemistry and physics experiments, receive intelligent AI guidance, generate instant lab reports, and develop practical skills in a safe, browser-based environment—anytime, anywhere.
           </p>
 
           <div className="lp-hero-actions">
             <button className="lp-btn lp-btn-primary" onClick={() => setScreen('start')}>
-              <Rocket size={20} /> Get Started
+              🚀 Launch VirtuLab
             </button>
             <a href="#experiments" className="lp-btn lp-btn-ghost">
-              <Play size={18} /> View Experiments
+              🧪 Explore Experiments
             </a>
           </div>
 
           <div className="lp-hero-stats">
-            <StatCounter icon={<FlaskConical size={20} />} value="16+" label="Experiments" delay={100} />
-            <StatCounter icon={<Microscope size={20} />} value="2" label="3D Lab Rooms" delay={200} />
-            <StatCounter icon={<Sparkles size={20} />} value="AI" label="Graded Reports" delay={300} />
-            <StatCounter icon={<Users size={20} />} value="Live" label="Class Sync" delay={400} />
+            <StatCounter value="16+" label="Interactive STEM Experiments" delay={100} />
+            <StatCounter value="2" label="Immersive 3D Laboratory Environments" delay={200} />
+            <StatCounter value="AI" label="Smart AI Lab Mentor" delay={300} />
+            <StatCounter value="24/7" label="Learn Anytime, Anywhere" delay={400} />
           </div>
         </div>
 
         <div className="lp-hero-visual">
           <img
             src="/hero_3d_lab.png"
-            alt="ZeAI 3D Virtual Lab"
+            alt="VirtuLab 3D Virtual Lab"
             className="lp-hero-img"
             style={{ transform: `translateY(${scrollY * -0.08}px)` }}
           />
@@ -296,8 +301,8 @@ export default function LandingPage() {
           <p className="lp-cta-desc">
             Create your free student or teacher account and start experimenting in minutes.
           </p>
-          <button className="lp-btn lp-btn-primary lp-btn-lg" onClick={() => setScreen('start')}>
-            <Rocket size={22} /> Launch ZeAI Lab
+          <button className="lp-btn lp-btn-cta lp-btn-lg" onClick={() => setScreen('start')}>
+            <Rocket size={22} /> Launch VirtuLab
           </button>
           <div className="lp-cta-meta">
             <span><ShieldCheck size={14} /> Secure</span>
@@ -311,10 +316,10 @@ export default function LandingPage() {
       <footer className="lp-footer">
         <div className="lp-footer-inner">
           <div className="lp-footer-brand">
-            <FlaskConical size={20} style={{ color: '#818cf8' }} />
-            <span>ZeAI Lab</span>
+            <FlaskConical size={20} style={{ color: '#8b5cf6' }} />
+            <span>VirtuLab</span>
           </div>
-          <span className="lp-footer-copy">© 2026 ZeAI — Virtual Laboratory Simulator · #MadeInIndia</span>
+          <span className="lp-footer-copy">© 2026 VirtuLab — Virtual Laboratory Simulator · #MadeInIndia</span>
         </div>
       </footer>
     </div>

@@ -1,0 +1,531 @@
+/* ═══════════════════════════════════════════════════════════
+   VirtuLab AI Assistant Panel — Modern ChatGPT-like Styling
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Floating Action Button (FAB) ── */
+.vl-chat-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 8000;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  color: #ffffff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.15),
+    0 0 25px rgba(139, 92, 246, 0.25);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.vl-chat-fab:hover {
+  transform: scale(1.08);
+  box-shadow:
+    0 6px 25px rgba(0, 0, 0, 0.2),
+    0 0 35px rgba(139, 92, 246, 0.45);
+}
+
+.vl-chat-fab.open {
+  background: #f43f5e;
+  border-color: rgba(244, 63, 94, 0.4);
+}
+
+/* ── Notification Badge ── */
+.vl-fab-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ef4444;
+  border: 2px solid #ffffff;
+}
+
+/* ── Chat Panel (Slide-out Sidebar) ── */
+.vl-chat-panel {
+  position: fixed;
+  top: 0;
+  right: -420px;
+  width: 400px;
+  height: 100vh;
+  z-index: 8001;
+  background: #ffffff;
+  box-shadow: -8px 0 32px rgba(15, 23, 42, 0.08);
+  border-left: 1px solid rgba(139, 92, 246, 0.15);
+  display: flex;
+  flex-direction: column;
+  transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #0f172a;
+}
+
+.vl-chat-panel.open {
+  right: 0;
+}
+
+/* ── Header ── */
+.vl-chat-header {
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #fdfbf7 0%, #f5efe6 100%);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vl-chat-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.vl-chat-title {
+  flex: 1;
+}
+
+.vl-chat-title h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0;
+  color: #0f172a;
+}
+
+.vl-chat-title span {
+  font-size: 0.75rem;
+  color: #64748b;
+  display: block;
+  margin-top: 1px;
+}
+
+.vl-chat-clear {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 6px;
+  color: #94a3b8;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.vl-chat-clear:hover {
+  background: rgba(15, 23, 42, 0.05);
+  color: #64748b;
+}
+
+/* ── Quick Actions ── */
+.vl-quick-actions {
+  display: flex;
+  gap: 8px;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+  background: #fdfbf7;
+}
+
+.vl-quick-actions::-webkit-scrollbar {
+  display: none;
+}
+
+.vl-quick-btn {
+  white-space: nowrap;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  background: #ffffff;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vl-quick-btn:hover {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.04);
+}
+
+/* ── Messages List ── */
+.vl-chat-messages {
+  flex: 1;
+  padding: 1.25rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: #fafaf9;
+}
+
+.vl-chat-messages::-webkit-scrollbar {
+  width: 5px;
+}
+
+.vl-chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.15);
+  border-radius: 4px;
+}
+
+/* ── Welcome State ── */
+.vl-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: auto 0;
+  padding: 1rem;
+  color: #475569;
+}
+
+.vl-welcome-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.vl-welcome h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.5rem;
+}
+
+.vl-welcome p {
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+  line-height: 1.5;
+}
+
+.vl-welcome ul {
+  text-align: left;
+  font-size: 0.82rem;
+  padding-left: 20px;
+  margin: 0 0 1rem 0;
+  line-height: 1.6;
+}
+
+.vl-welcome ul li {
+  margin-bottom: 4px;
+}
+
+.vl-welcome-footer {
+  font-weight: 600;
+  color: #8b5cf6;
+}
+
+/* ── Message Containers & Bubbles ── */
+.vl-msg-container {
+  display: flex;
+  width: 100%;
+}
+
+.vl-msg-container.user {
+  justify-content: flex-end;
+}
+
+.vl-msg-container.assistant,
+.vl-msg-container.error {
+  justify-content: flex-start;
+}
+
+.vl-msg {
+  max-width: 85%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  word-wrap: break-word;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+}
+
+.vl-msg.user {
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+}
+
+.vl-msg.assistant {
+  background: #f1f5f9;
+  color: #1e293b;
+  border-bottom-left-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.vl-msg.error {
+  background: #fff1f2;
+  color: #b91c1c;
+  border: 1px solid #fecdd3;
+  border-bottom-left-radius: 4px;
+}
+
+/* ── Markdown Inner Element Styling ── */
+.vl-msg.assistant strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.vl-msg.assistant em {
+  color: #64748b;
+  font-style: italic;
+}
+
+.vl-msg.assistant .ai-h1,
+.vl-msg.assistant .ai-h2,
+.vl-msg.assistant .ai-h3 {
+  font-weight: 700;
+  margin: 12px 0 6px 0;
+  color: #0f172a;
+}
+
+.vl-msg.assistant .ai-h1 { font-size: 1.05rem; }
+.vl-msg.assistant .ai-h2 { font-size: 0.95rem; }
+.vl-msg.assistant .ai-h3 { font-size: 0.88rem; }
+
+.vl-msg.assistant .ai-blockquote {
+  border-left: 3px solid #8b5cf6;
+  margin: 8px 0;
+  padding-left: 10px;
+  color: #475569;
+  font-style: italic;
+  background: rgba(139, 92, 246, 0.03);
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-radius: 0 4px 4px 0;
+}
+
+.vl-msg.assistant .ai-ul {
+  margin: 6px 0;
+  padding-left: 20px;
+}
+
+.vl-msg.assistant .ai-ul li {
+  margin-bottom: 4px;
+}
+
+.vl-msg.assistant .ai-inline-code {
+  background: rgba(15, 23, 42, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  color: #db2777;
+}
+
+.vl-msg.assistant .ai-formula {
+  background: #fdfbf7;
+  border: 1px solid rgba(139, 92, 246, 0.1);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  margin: 8px 0;
+  font-size: 0.8rem;
+  color: #8b5cf6;
+  text-align: center;
+}
+
+.vl-msg.assistant .ai-formula.inline {
+  display: inline-block;
+  padding: 1px 4px;
+  margin: 0 2px;
+  background: transparent;
+  border: none;
+}
+
+/* ── Code Blocks inside Chat bubbles ── */
+.ai-code-block {
+  background: #0f172a;
+  border-radius: 8px;
+  margin: 10px 0;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ai-code-header {
+  background: #1e293b;
+  padding: 6px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ai-code-header span {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-family: monospace;
+  text-transform: uppercase;
+}
+
+.ai-copy-btn,
+.vl-msg-copy-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e2e8f0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ai-copy-btn:hover {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.vl-msg-copy-btn {
+  position: absolute;
+  bottom: -22px;
+  right: 6px;
+  background: #ffffff;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  font-size: 0.65rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.vl-msg:hover .vl-msg-copy-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.vl-msg-copy-btn:hover {
+  background: rgba(139, 92, 246, 0.05);
+  color: #8b5cf6;
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.ai-code-block pre {
+  margin: 0;
+  padding: 12px;
+  overflow-x: auto;
+}
+
+.ai-code-block pre code {
+  color: #f8fafc;
+  font-size: 0.78rem;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+}
+
+/* ── Markdown Tables inside Chat bubbles ── */
+.ai-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin: 10px 0;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.ai-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.ai-table td {
+  border: 1px solid #e2e8f0;
+  padding: 6px 8px;
+}
+
+.ai-table tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+/* ── Typing Indicator ── */
+.vl-typing-indicator {
+  display: flex;
+  gap: 4px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border-bottom-left-radius: 4px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  align-self: flex-start;
+  width: 50px;
+  justify-content: center;
+}
+
+.vl-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #8b5cf6;
+  animation: vl-typing-bounce 1.4s infinite ease-in-out both;
+}
+
+.vl-dot:nth-child(1) { animation-delay: -0.32s; }
+.vl-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes vl-typing-bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+/* ── Fixed Input Area ── */
+.vl-chat-input-area {
+  padding: 1rem;
+  background: #ffffff;
+  border-top: 1px solid rgba(139, 92, 246, 0.1);
+  display: flex;
+  gap: 10px;
+}
+
+.vl-chat-input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  outline: none;
+  font-size: 0.85rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  background: #fafaf9;
+}
+
+.vl-chat-input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  background: #ffffff;
+}
+
+.vl-chat-send {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.vl-chat-send:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.vl-chat-send:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+}

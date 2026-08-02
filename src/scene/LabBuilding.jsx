@@ -1,5 +1,6 @@
 import React from 'react';
 import * as THREE from 'three';
+import { Text } from '@react-three/drei';
 
 // Reusable wall material
 const wallMat = new THREE.MeshStandardMaterial({ color: '#e2e0d8', roughness: 0.9, metalness: 0 });
@@ -20,11 +21,32 @@ function Wall({ position, size, material, rotation = [0, 0, 0] }) {
 function RoomSign({ position, text, color }) {
   return (
     <group position={position}>
-      {/* Sign background */}
-      <mesh position={[0, 0, 0.01]}>
-        <planeGeometry args={[3, 0.6]} />
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.3} />
+      {/* Outer border/frame */}
+      <mesh position={[0, 0, 0]}>
+        <planeGeometry args={[3.2, 0.75]} />
+        <meshStandardMaterial color="#111111" roughness={0.7} />
       </mesh>
+      {/* Board background */}
+      <mesh position={[0, 0, 0.005]}>
+        <planeGeometry args={[3.1, 0.65]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.5} />
+      </mesh>
+      {/* Colored Board inner plate */}
+      <mesh position={[0, 0, 0.01]}>
+        <planeGeometry args={[3.0, 0.55]} />
+        <meshStandardMaterial color={color} roughness={0.4} />
+      </mesh>
+      {/* Bold Black Text */}
+      <Text
+        position={[0, 0, 0.02]}
+        fontSize={0.25}
+        color="#000000"
+        anchorX="center"
+        anchorY="middle"
+        fontWeight="bold"
+      >
+        {text}
+      </Text>
     </group>
   );
 }

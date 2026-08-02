@@ -1,5 +1,6 @@
 import React from 'react';
 import * as THREE from 'three';
+import { Text } from '@react-three/drei';
 import useGameStore from '../store/gameStore';
 
 const EXPERIMENTS = {
@@ -43,6 +44,17 @@ function SelectorButton({ position, label, color, isActive, onInteract }) {
           metalness={0.2}
         />
       </mesh>
+      {/* Experiment Label */}
+      <Text
+        position={[0, 0, 0.032]} // slightly in front of the box surface
+        fontSize={0.12}
+        color="white"
+        fontWeight="bold"
+        anchorX="center"
+        anchorY="middle"
+      >
+        {label}
+      </Text>
       {/* Active indicator dot */}
       {isActive && (
         <mesh position={[-0.8, 0, 0.04]}>

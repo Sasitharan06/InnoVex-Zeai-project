@@ -176,7 +176,7 @@ export default function StartScreen() {
   // Panel content
   const leftContent = {
     'role': {
-      title: 'ZeAI Lab',
+      title: 'VirtuLab',
       subtitle: 'Virtual Laboratory Simulator',
       desc: 'Experience hands-on science experiments powered by AI in an immersive 3D virtual environment.',
       img: '/hero_3d_lab.png',
@@ -188,7 +188,7 @@ export default function StartScreen() {
     },
     'student-login': {
       title: 'Student\nPortal',
-      subtitle: 'Welcome back to ZeAI Lab',
+      subtitle: 'Welcome back to VirtuLab',
       desc: 'Sign in to access your student dashboard, view enrolled classrooms, and enter the 3D lab.',
       img: '/hero_3d_lab.png',
       badges: [
@@ -241,8 +241,8 @@ export default function StartScreen() {
         <div className="auth-left-inner">
           <div className="auth-brand">
             <div className="auth-brand-logo">
-              <span className="auth-brand-icon" style={{ display: 'inline-flex', color: '#818cf8' }}><FlaskConical size={24} /></span>
-              <span className="auth-brand-name">ZeAI</span>
+              <span className="auth-brand-icon" style={{ display: 'inline-flex', color: '#8b5cf6' }}><FlaskConical size={24} /></span>
+              <span className="auth-brand-name">VirtuLab</span>
             </div>
             <div className="auth-brand-tagline">Virtual Lab Platform</div>
           </div>
@@ -266,7 +266,7 @@ export default function StartScreen() {
           </div>
 
           <div className="auth-made-in">
-            <span style={{ color: '#6366f1', fontWeight: 700 }}>#MadeInIndia</span> — ZeAI Hackathon 2026
+            <span style={{ color: '#ec4899', fontWeight: 700 }}>#MadeInIndia</span> — VirtuLab Hackathon 2026
           </div>
         </div>
       </div>
@@ -279,13 +279,13 @@ export default function StartScreen() {
           {step === 'role' && (
             <div className="auth-form-inner">
               <div className="auth-form-header">
-                <h2 className="auth-form-title">Welcome to ZeAI Lab</h2>
+                <h2 className="auth-form-title">Welcome to VirtuLab</h2>
                 <p className="auth-form-desc">Select your role to log in or create an account</p>
               </div>
 
               <div className="role-cards">
                 <button className="role-card student-card" onClick={() => { resetForm(); setStep('student-login'); }} id="role-student-btn">
-                  <div className="role-card-icon" style={{ background: 'rgba(99,102,241,0.15)', color: '#818cf8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div className="role-card-icon" style={{ background: 'rgba(139,92,246,0.15)', color: '#8b5cf6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <GraduationCap size={26} />
                   </div>
                   <div className="role-card-content">
@@ -308,7 +308,7 @@ export default function StartScreen() {
               </div>
 
               <div className="auth-divider">
-                <span>Powered by ZeAI + Supabase</span>
+                <span>Powered by VirtuLab + Supabase</span>
               </div>
               <div className="auth-footer-note" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                 <ShieldCheck size={16} style={{ color: '#10b981' }} /> Secure Virtual Science Simulator

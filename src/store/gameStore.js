@@ -40,6 +40,10 @@ const useGameStore = create((set, get) => ({
     }
   },
   
+  // ── Chat State ──
+  chatOpen: false,
+  setChatOpen: (open) => set({ chatOpen: open }),
+  
   // ── Auth / Role ──
   role: null, // 'student' | 'faculty'
   setRole: (role) => set({ role }),

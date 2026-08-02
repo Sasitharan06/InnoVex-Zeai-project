@@ -10,7 +10,7 @@ import PhysicsRoom from './physics/PhysicsRoom';
 import HUD from '../ui/HUD';
 import ReportModal from '../ui/ReportModal';
 import ExperimentGuideModal from '../ui/ExperimentGuideModal';
-import ZeaiChat from '../ui/ZeaiChat';
+import AIAssistant from '../ui/AIAssistant';
 
 const keyMap = [
   { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
@@ -62,14 +62,29 @@ export default function LabScene() {
   const pointerLocked = useGameStore((s) => s.pointerLocked);
   const showGuideModal = useGameStore((s) => s.showGuideModal);
   const showReport = useGameStore((s) => s.showReport);
+  const chatOpen = useGameStore((s) => s.chatOpen);
   const [showLockPrompt, setShowLockPrompt] = useState(true);
   const controlsRef = useRef();
 
   useEffect(() => {
-    if ((showGuideModal || showReport) && controlsRef.current) {
+    if ((showGuideModal || showReport || chatOpen) && controlsRef.current) {
       controlsRef.current.unlock();
     }
-  }, [showGuideModal, showReport]);
+  }, [showGuideModal, showReport, chatOpen]);
+
+  useEffect(() => {
+    if (chatOpen) {
+      if (document.pointerLockElement) {
+        document.exitPointerLock?.();
+      }
+    } else {
+      // Re-acquire Pointer Lock automatically when chat is closed
+      const canvas = document.querySelector('canvas');
+      if (canvas && !showGuideModal && !showReport) {
+        canvas.requestPointerLock?.();
+      }
+    }
+  }, [chatOpen, showGuideModal, showReport]);
 
   const handleLock = () => {
     setPointerLocked(true);
@@ -95,6 +110,7 @@ export default function LabScene() {
           </Suspense>
           <PointerLockControls
             ref={controlsRef}
+            enabled={!chatOpen}
             onLock={handleLock}
             onUnlock={handleUnlock}
           />
@@ -110,13 +126,13 @@ export default function LabScene() {
       {/* Pre-Lab Experiment Guide Modal */}
       <ExperimentGuideModal />
 
-      {/* ZEAI AI Lab Mentor Chat */}
-      <ZeaiChat />
+      {/* VirtuLab AI Lab Mentor Chat */}
+      <AIAssistant />
 
       {/* Click to lock prompt */}
-      {showLockPrompt && (
+      {!chatOpen && !pointerLocked && (
         <div className="lock-overlay" onClick={() => controlsRef.current?.lock()}>
-          <h2>🔬 ZeAI Virtual Laboratory</h2>
+          <h2>🔬 VirtuLab Virtual Laboratory</h2>
           <p>Click anywhere to enter the lab</p>
           <p style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#64748b' }}>
             WASD to move • Mouse to look • E to interact • ESC to unlock

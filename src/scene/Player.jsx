@@ -29,6 +29,7 @@ export default function Player() {
   const interactablesRef = useRef([]);
   const setInteractionPrompt = useGameStore((s) => s.setInteractionPrompt);
   const heldItem = useGameStore((s) => s.heldItem);
+  const chatOpen = useGameStore((s) => s.chatOpen);
   
   const direction = useRef(new THREE.Vector3());
   const frontVector = useRef(new THREE.Vector3());
@@ -46,6 +47,7 @@ export default function Player() {
   // E key & Space & Enter interaction handler
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (chatOpen) return;
       const key = e.key ? e.key.toLowerCase() : '';
       if (key === 'e' || e.code === 'KeyE' || key === 'enter' || key === ' ') {
         const prompt = useGameStore.getState().interactionPrompt || lastValidPromptRef.current;
@@ -56,9 +58,10 @@ export default function Player() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [chatOpen]);
 
   useFrame((state, delta) => {
+    if (chatOpen) return;
     const { forward, backward, left, right } = get();
 
     // Movement

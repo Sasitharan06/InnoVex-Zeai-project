@@ -125,8 +125,8 @@ export default function FacultyDashboard() {
       <aside className="fd-sidebar">
         <div className="fd-sidebar-top">
           <div className="fd-brand">
-            <span className="fd-brand-icon" style={{ color: '#818cf8', display: 'inline-flex' }}><FlaskConical size={22} /></span>
-            <span className="fd-brand-name">ZeAI</span>
+            <span className="fd-brand-icon" style={{ color: '#8b5cf6', display: 'inline-flex' }}><FlaskConical size={22} /></span>
+            <span className="fd-brand-name">VirtuLab</span>
           </div>
           <nav className="fd-nav">
             <button

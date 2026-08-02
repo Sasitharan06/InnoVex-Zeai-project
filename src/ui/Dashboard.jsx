@@ -95,8 +95,8 @@ export default function Dashboard() {
       <aside className="fd-sidebar">
         <div className="fd-sidebar-top">
           <div className="fd-brand">
-            <span className="fd-brand-icon" style={{ color: '#818cf8', display: 'inline-flex' }}><FlaskConical size={22} /></span>
-            <span className="fd-brand-name">ZeAI</span>
+            <span className="fd-brand-icon" style={{ color: '#8b5cf6', display: 'inline-flex' }}><FlaskConical size={22} /></span>
+            <span className="fd-brand-name">VirtuLab</span>
           </div>
           <nav className="fd-nav">
             <button
@@ -336,7 +336,7 @@ export default function Dashboard() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginTop: '0.5rem' }}>
               {/* Chemistry Lab Card */}
-              <div className="fd-student-card lab-card-3d" style={{ padding: '0', overflow: 'hidden', background: '#111827', border: '1px solid rgba(6,182,212,0.2)' }}>
+              <div className="fd-student-card lab-card-3d" style={{ padding: '0', overflow: 'hidden', background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid rgba(6,182,212,0.2)' }}>
                 <div className="lab-card-img-wrap">
                   <img src="/chemistry_3d_card.png" alt="Chemistry Titration Lab" className="lab-card-img" />
                   <span className="lab-card-badge chem" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
@@ -344,8 +344,8 @@ export default function Dashboard() {
                   </span>
                 </div>
                 <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  <h3 style={{ fontSize: '1.2rem', color: '#f1f5f9', fontWeight: 800 }}>Chemistry Titration Lab</h3>
-                  <p style={{ fontSize: '0.85rem', color: '#94a3b8', lineHeight: 1.5 }}>
+                  <h3 style={{ fontSize: '1.2rem', color: 'var(--text-primary)', fontWeight: 800 }}>Chemistry Titration Lab</h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                     Perform acid-base titration, add phenolphthalein indicator, measure volume added, and analyze equivalence point using AI.
                   </p>
                   <button className="auth-btn auth-btn-primary" style={{ marginTop: '0.5rem', background: 'linear-gradient(135deg, #06b6d4, #0891b2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => launchLab('chemistry')}>
@@ -355,7 +355,7 @@ export default function Dashboard() {
               </div>
 
               {/* Physics Lab Card */}
-              <div className="fd-student-card lab-card-3d" style={{ padding: '0', overflow: 'hidden', background: '#111827', border: '1px solid rgba(249,115,22,0.2)' }}>
+              <div className="fd-student-card lab-card-3d" style={{ padding: '0', overflow: 'hidden', background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid rgba(249,115,22,0.2)' }}>
                 <div className="lab-card-img-wrap">
                   <img src="/physics_3d_card.png" alt="Physics Circuit Lab" className="lab-card-img" />
                   <span className="lab-card-badge phys" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
@@ -363,8 +363,8 @@ export default function Dashboard() {
                   </span>
                 </div>
                 <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  <h3 style={{ fontSize: '1.2rem', color: '#f1f5f9', fontWeight: 800 }}>Physics Circuit Lab</h3>
-                  <p style={{ fontSize: '0.85rem', color: '#94a3b8', lineHeight: 1.5 }}>
+                  <h3 style={{ fontSize: '1.2rem', color: 'var(--text-primary)', fontWeight: 800 }}>Physics Circuit Lab</h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                     Assemble electronic components into a slot breadboard, connect battery & switch, verify current flow, and turn on the LED.
                   </p>
                   <button className="auth-btn auth-btn-faculty" style={{ marginTop: '0.5rem', background: 'linear-gradient(135deg, #f97316, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => launchLab('physics')}>
