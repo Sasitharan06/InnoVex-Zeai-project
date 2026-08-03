@@ -1,153 +1,156 @@
 import { createClient } from '@supabase/supabase-js';
-import * as supabaseService from './supabase';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://sb-xtvzwmkfwxqxyyarcl.supabase.co';
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'dummy_key';
-export const supabase = supabaseService.supabase || createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
-// ── Auth Delegates (with normalization for user/student/faculty & full_name/name) ──
+const BASE_URL = 'http://localhost:3000/api';
+
+// Helper to get Bearer token for Express Backend
+async function getAuthHeaders() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return {
+    'Content-Type': 'application/json',
+    ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {})
+  };
+}
+
+// ── Auth (Supabase Auth directly) ──
 
 export async function loginStudent(email, password) {
-  const res = await supabaseService.loginStudent(email, password);
-  const studentData = res.student || res.user || { id: 'st-' + Date.now(), name: email.split('@')[0], email };
-  const name = studentData.name || studentData.full_name || email.split('@')[0];
-  const normalized = {
-    ...studentData,
-    id: studentData.id || 'st-' + Date.now(),
-    name,
-    full_name: name,
-    email: studentData.email || email,
-    role: 'student'
-  };
-  return {
-    student: normalized,
-    user: normalized,
-    classroom: res.classroom || null
-  };
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  if (data.user.user_metadata.role !== 'student') {
+    await supabase.auth.signOut();
+    throw new Error('This email is registered as a Faculty account.');
+  }
+  return { user: { id: data.user.id, email: data.user.email, role: 'student', full_name: data.user.user_metadata.full_name } };
 }
 
 export async function loginFaculty(email, password) {
-  const res = await supabaseService.loginFaculty(email, password);
-  const facultyData = res.faculty || res.user || { id: 'fac-' + Date.now(), name: email.split('@')[0], email };
-  const name = facultyData.name || facultyData.full_name || email.split('@')[0];
-  const normalized = {
-    ...facultyData,
-    id: facultyData.id || 'fac-' + Date.now(),
-    name,
-    full_name: name,
-    email: facultyData.email || email,
-    role: 'faculty'
-  };
-  return {
-    faculty: normalized,
-    user: normalized,
-    classroom: res.classroom || null,
-    allClassrooms: res.allClassrooms || []
-  };
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  if (data.user.user_metadata.role !== 'faculty') {
+    await supabase.auth.signOut();
+    throw new Error('This email is registered as a Student account.');
+  }
+  return { user: { id: data.user.id, email: data.user.email, role: 'faculty', full_name: data.user.user_metadata.full_name } };
 }
 
-export async function createStudent(name, email, password) {
-  const cleanName = (name || '').trim();
-  const cleanEmail = (email || '').trim() || `${cleanName.toLowerCase().replace(/\s+/g, '.')}@lab.virtulab.in`;
-  const student = await supabaseService.createStudent(cleanName, null, cleanEmail);
-  const normalized = { ...student, full_name: student.name, role: 'student' };
-  return {
-    message: 'Account created successfully!',
-    user: normalized,
-    student: normalized
-  };
+export async function createStudent(fullName, email, password, confirmPassword) {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { full_name: fullName, role: 'student' }
+    }
+  });
+  if (error) throw error;
+  return { message: 'Account created! Please check your email to verify before logging in.' };
 }
 
-export async function createFaculty(name, email) {
-  const cleanName = (name || '').trim();
-  const cleanEmail = (email || '').trim() || `${cleanName.toLowerCase().replace(/\s+/g, '.')}@lab.virtulab.in`;
-  const facultyId = 'fac-' + cleanEmail.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const normalized = { id: facultyId, name: cleanName, full_name: cleanName, email: cleanEmail, role: 'faculty' };
-  return {
-    message: 'Faculty account created!',
-    user: normalized,
-    faculty: normalized
-  };
+export async function createFaculty(fullName, email, password, confirmPassword) {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { full_name: fullName, role: 'faculty' }
+    }
+  });
+  if (error) throw error;
+  return { message: 'Account created! Please check your email to verify before logging in.' };
 }
 
 export async function logout() {
-  try {
-    if (supabase && supabase.auth) {
-      await supabase.auth.signOut();
-    }
-  } catch (e) {
-    // Ignore offline signOut errors
-  }
-  return true;
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
 }
 
 export async function getSession() {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email;
-      return {
-        id: session.user.id,
-        email: session.user.email,
-        role: session.user.user_metadata?.role || 'student',
-        full_name: name,
-        name: name
-      };
-    }
-  } catch (e) {}
-  return null;
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return null;
+  return {
+    id: session.user.id,
+    email: session.user.email,
+    role: session.user.user_metadata.role,
+    full_name: session.user.user_metadata.full_name
+  };
 }
 
-// ── Classroom Delegates ──
-export async function createClassroom(name, code, facultyName, facultyId) {
-  return await supabaseService.createClassroom(name, code, facultyName, facultyId);
+// ── Classrooms & Experiments (Express Backend) ──
+
+export async function createClassroom(name) {
+  const res = await fetch(`${BASE_URL}/data/classrooms`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ name })
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Failed to create classroom');
+  }
+  return await res.json();
 }
 
-export async function getFacultyClassrooms(facultyId) {
-  return await supabaseService.getFacultyClassrooms(facultyId);
+export async function getFacultyClassrooms() {
+  const res = await fetch(`${BASE_URL}/data/classrooms/faculty`, {
+    headers: await getAuthHeaders()
+  });
+  if (!res.ok) return [];
+  return await res.json();
 }
 
-export async function joinClassroom(code, studentId, studentName) {
-  return await supabaseService.joinClassroom(code, studentId, studentName);
+export async function joinClassroom(code) {
+  const res = await fetch(`${BASE_URL}/data/classrooms/join`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ code })
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Failed to join classroom');
+  }
+  return await res.json();
 }
 
-export async function getStudentClassroom(studentId) {
-  return await supabaseService.getStudentClassroom(studentId);
+export async function getStudentClassroom() {
+  const res = await fetch(`${BASE_URL}/data/classrooms/student`, {
+    headers: await getAuthHeaders()
+  });
+  if (!res.ok) return null;
+  return await res.json();
 }
 
 export async function getClassroomMembers(classroomId) {
-  return await supabaseService.getClassroomMembers(classroomId);
+  const res = await fetch(`${BASE_URL}/data/classrooms/${classroomId}/members`, {
+    headers: await getAuthHeaders()
+  });
+  if (!res.ok) return [];
+  return await res.json();
 }
 
-// ── Experiments Delegate (Supports all signature overloads) ──
-export async function saveExperiment(p1, p2, p3, p4, p5, p6, p7, p8, p9) {
-  try {
-    if (typeof p1 === 'string' && (p1 === 'chemistry' || p1 === 'physics')) {
-      const domain = p1;
-      const actions = p2;
-      const finalState = p3;
-      const score = p4;
-      const aiReport = p5;
-      const classroomId = p6;
-      return await supabaseService.saveExperiment(null, domain, actions, finalState, score, aiReport, classroomId);
-    }
-    return await supabaseService.saveExperiment(p1, p2, p3, p4, p5, p6, p7, p8, p9);
-  } catch (err) {
-    console.warn('saveExperiment notice:', err);
-    return {
-      id: crypto.randomUUID(),
-      domain: typeof p1 === 'string' && (p1 === 'chemistry' || p1 === 'physics') ? p1 : (p2 || 'chemistry'),
-      score: typeof p4 === 'number' ? p4 : (typeof p5 === 'number' ? p5 : 80),
-      ai_report: p5 || p6 || null,
-      created_at: new Date().toISOString()
-    };
-  }
+export async function saveExperiment(domain, actions, finalState, score, aiReport, classroomId) {
+  const res = await fetch(`${BASE_URL}/data/experiments`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ domain, actions, final_state: finalState, score, ai_report: aiReport, classroom_id: classroomId })
+  });
+  if (!res.ok) throw new Error('Failed to save experiment');
+  return await res.json();
 }
 
-export async function getStudentExperiments(studentId) {
-  return await supabaseService.getStudentExperiments(studentId);
+export async function getStudentExperiments() {
+  const res = await fetch(`${BASE_URL}/data/experiments/student`, {
+    headers: await getAuthHeaders()
+  });
+  if (!res.ok) return [];
+  return await res.json();
 }
 
 export async function getClassroomExperiments(classroomId) {
-  return await supabaseService.getClassroomExperiments(classroomId);
+  const res = await fetch(`${BASE_URL}/data/classrooms/${classroomId}/experiments`, {
+    headers: await getAuthHeaders()
+  });
+  if (!res.ok) return [];
+  return await res.json();
 }

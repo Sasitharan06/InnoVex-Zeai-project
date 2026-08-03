@@ -233,14 +233,18 @@ export async function createStudent(name, classroomId = null, customEmail = null
 
 // ── Classrooms ──
 
-export async function createClassroom(name, facultyName, facultyId) {
+export async function createClassroom(name = 'New Classroom', facultyName = 'Faculty', facultyId = 'fac-default') {
   const code = generateClassroomCode();
+  const safeName = (typeof name === 'string' ? name : 'New Classroom').trim();
+  const safeFacultyName = (typeof facultyName === 'string' && facultyName ? facultyName : 'Faculty').trim();
+  const safeFacultyId = facultyId || 'fac-default';
+
   const newClassroom = {
     id: crypto.randomUUID(),
-    name: name.trim(),
+    name: safeName,
     code: code.toUpperCase(),
-    faculty_name: facultyName.trim(),
-    faculty_id: facultyId,
+    faculty_name: safeFacultyName,
+    faculty_id: safeFacultyId,
     created_at: new Date().toISOString()
   };
 
@@ -309,15 +313,6 @@ export async function getClassroomByCode(code) {
   }
 
   return null;
-}
-
-export async function joinClassroom(code, studentId = null, studentName = null) {
-  const cls = await getClassroomByCode(code);
-  if (!cls) throw new Error('Invalid classroom code');
-  if (studentId) {
-    await joinClassroomMember(cls.id, studentId, studentName);
-  }
-  return cls;
 }
 
 export async function getFacultyClassrooms(facultyId) {

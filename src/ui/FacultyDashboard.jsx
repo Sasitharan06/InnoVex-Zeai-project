@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import useGameStore from '../store/gameStore';
-import { getClassroomMembers, getClassroomExperiments, logout, getFacultyClassrooms, createClassroom } from '../services/api';
+import { logout } from '../services/api';
+import { getClassroomMembers, getClassroomExperiments, getFacultyClassrooms, createClassroom } from '../services/supabase';
 import AILoader from './AILoader';
 import {
   FlaskConical,
@@ -39,6 +40,7 @@ function hashColor(str = '') {
 export default function FacultyDashboard() {
   const setScreen = useGameStore((s) => s.setScreen);
   const studentName = useGameStore((s) => s.studentName);
+  const studentId = useGameStore((s) => s.studentId);
   const classroom = useGameStore((s) => s.classroom);
   const [members, setMembers] = useState([]);
   const [experiments, setExperiments] = useState([]);
@@ -56,7 +58,8 @@ export default function FacultyDashboard() {
     try {
       let currentClassroom = classroom;
       if (!currentClassroom?.id) {
-        const classrooms = await getFacultyClassrooms();
+        const facultyId = studentId || 'fac-' + (studentName || 'faculty').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const classrooms = await getFacultyClassrooms(facultyId);
         if (classrooms.length > 0) {
           currentClassroom = classrooms[0];
           setClassroom(currentClassroom);
@@ -76,7 +79,7 @@ export default function FacultyDashboard() {
       console.error('Failed to fetch classroom data:', err);
     }
     setLoading(false);
-  }, [classroom, setClassroom]);
+  }, [classroom, setClassroom, studentId, studentName]);
 
   useEffect(() => {
     fetchData();
@@ -88,11 +91,12 @@ export default function FacultyDashboard() {
     if (!newClassroomName.trim()) return;
     setCreatingClassroom(true);
     try {
-      const newClass = await createClassroom(newClassroomName.trim());
+      const facultyId = studentId || 'fac-' + (studentName || 'faculty').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const newClass = await createClassroom(newClassroomName.trim(), studentName || 'Faculty', facultyId);
       setClassroom(newClass);
       fetchData();
     } catch (err) {
-      console.error(err);
+      console.error('Classroom creation error:', err);
       alert('Failed to create classroom');
     }
     setCreatingClassroom(false);
