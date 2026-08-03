@@ -1,5 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import useGameStore from '../store/gameStore';
+import FlashCard from './FlashCard';
+import FeatureModal from './FeatureModal';
+import { AnimatePresence } from 'framer-motion';
+import { flashCardsData } from '../data/flashCardsData';
 import {
   FlaskConical, Zap, Sparkles, Microscope, School, BarChart3,
   GraduationCap, Beaker, Flame, Droplets, TestTubes, Atom,
@@ -124,6 +128,7 @@ export default function LandingPage() {
   const setScreen = useGameStore((s) => s.setScreen);
   const [scrollY, setScrollY] = useState(0);
   const heroRef = useRef(null);
+  const [selectedFeature, setSelectedFeature] = useState(null);
 
   useEffect(() => {
     const el = document.getElementById('lp-scroll');
@@ -155,16 +160,7 @@ export default function LandingPage() {
     { icon: <Sparkles size={22} />, title: 'Electromagnetic Induction', desc: 'Magnet moves through coil — galvanometer needle deflects.', difficulty: 'hard', image: '/exp_induction.png' },
   ];
 
-  const features = [
-    { icon: <Microscope size={28} />, title: 'Immersive 3D Labs', desc: 'Walk through a fully rendered virtual laboratory in your browser.' },
-    { icon: <Sparkles size={28} />, title: 'AI-Powered Assessment', desc: 'Get instant AI reports grading your experiment technique & accuracy.' },
-    { icon: <School size={28} />, title: 'Google Classroom Style', desc: 'Teachers create classrooms, students join with a code — live roster.' },
-    { icon: <BarChart3 size={28} />, title: 'Analytics Dashboard', desc: 'Real-time performance charts, score distributions & AI insights.' },
-    { icon: <BookOpen size={28} />, title: 'Multi-Domain Experiments', desc: 'Chemistry titrations, physics circuits, and many more planned.' },
-    { icon: <ShieldCheck size={28} />, title: 'Safe & Accessible', desc: 'No chemicals, no equipment — every student gets unlimited lab access.' },
-  ];
-
-  return (
+return (
     <div className="lp-root" id="lp-scroll">
 
       {/* ═══ HERO ═══ */}
@@ -227,8 +223,13 @@ export default function LandingPage() {
           <p className="lp-section-desc">A complete virtual lab environment built for students, teachers, and institutions.</p>
         </div>
         <div className="lp-features-grid">
-          {features.map((f, i) => (
-            <FeatureCard key={i} icon={f.icon} title={f.title} desc={f.desc} index={i} />
+          {flashCardsData.map((data, i) => (
+            <FlashCard 
+              key={data.id} 
+              data={data} 
+              index={i} 
+              onViewMore={(featureData) => setSelectedFeature(featureData)}
+            />
           ))}
         </div>
       </RevealSection>
@@ -292,36 +293,68 @@ export default function LandingPage() {
         </div>
       </RevealSection>
 
-      {/* ═══ CTA ═══ */}
-      <RevealSection className="lp-cta-section">
-        <div className="lp-cta-inner">
-          <div className="lp-cta-orb" />
-          <Sparkles size={32} className="lp-cta-sparkle" />
-          <h2 className="lp-cta-title">Ready to enter the virtual lab?</h2>
-          <p className="lp-cta-desc">
-            Create your free student or teacher account and start experimenting in minutes.
-          </p>
-          <button className="lp-btn lp-btn-cta lp-btn-lg" onClick={() => setScreen('start')}>
-            <Rocket size={22} /> Launch VirtuLab
-          </button>
-          <div className="lp-cta-meta">
-            <span><ShieldCheck size={14} /> Secure</span>
-            <span><Users size={14} /> Free Access</span>
-            <span><GraduationCap size={14} /> #MadeInIndia</span>
+      {/* ═══ PROFESSIONAL FOOTER ═══ */}
+      <footer className="lp-pro-footer">
+        <div className="lp-pro-footer-top">
+          <div className="lp-pro-footer-brand-col">
+            <div className="lp-footer-brand">
+              <FlaskConical size={24} style={{ color: '#8b5cf6' }} />
+              <span style={{ fontSize: '1.4rem' }}>VirtuLab</span>
+            </div>
+            <p className="lp-pro-footer-desc">
+              Reimagining Science Education Through AI & Interactive 3D Laboratories. 
+              Start experimenting in minutes.
+            </p>
+            <button className="lp-btn lp-btn-cta" style={{ marginTop: '1.5rem', width: 'fit-content' }} onClick={() => setScreen('start')}>
+              <Rocket size={18} /> Launch VirtuLab
+            </button>
+            <div className="lp-cta-meta" style={{ marginTop: '1rem', justifyContent: 'flex-start' }}>
+              <span><ShieldCheck size={14} /> Secure</span>
+              <span><Users size={14} /> Free Access</span>
+            </div>
+          </div>
+          
+          <div className="lp-pro-footer-links-col">
+            <h4>Platform</h4>
+            <a href="#features">Features</a>
+            <a href="#experiments">Experiments</a>
+            <a href="#">AI Mentorship</a>
+            <a href="#">Analytics</a>
+          </div>
+
+          <div className="lp-pro-footer-links-col">
+            <h4>Resources</h4>
+            <a href="#">Help Center</a>
+            <a href="#">Teacher Guides</a>
+            <a href="#">Student FAQs</a>
+            <a href="#">Community</a>
+          </div>
+
+          <div className="lp-pro-footer-links-col">
+            <h4>Legal</h4>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Cookie Policy</a>
+            <a href="#">Contact Us</a>
           </div>
         </div>
-      </RevealSection>
 
-      {/* ═══ FOOTER ═══ */}
-      <footer className="lp-footer">
-        <div className="lp-footer-inner">
-          <div className="lp-footer-brand">
-            <FlaskConical size={20} style={{ color: '#8b5cf6' }} />
-            <span>VirtuLab</span>
+        <div className="lp-pro-footer-bottom">
+          <span className="lp-footer-copy">© 2026 VirtuLab — Virtual Laboratory Simulator. All rights reserved.</span>
+          <div className="lp-footer-socials">
+            <span className="lp-made-in-india"><GraduationCap size={16}/> #MadeInIndia</span>
           </div>
-          <span className="lp-footer-copy">© 2026 VirtuLab — Virtual Laboratory Simulator · #MadeInIndia</span>
         </div>
       </footer>
+
+      <AnimatePresence>
+        {selectedFeature && (
+          <FeatureModal 
+            data={selectedFeature} 
+            onClose={() => setSelectedFeature(null)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
