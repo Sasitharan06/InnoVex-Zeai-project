@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import useGameStore from '../../store/gameStore';
 import { generateReport } from '../../services/aiReport';
-import { saveExperiment } from '../../services/supabase';
+import { saveExperiment } from '../../services/api';
 
 // ── Meter (Ammeter / Voltmeter) ──
 function Meter({ position, label, value, maxValue, unit, color }) {

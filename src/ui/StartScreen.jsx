@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import useGameStore from '../store/gameStore';
-import { createStudent, createClassroom, getClassroomByCode, loginStudent, loginFaculty } from '../services/supabase';
+import { createStudent, createClassroom, joinClassroom, loginStudent, loginFaculty, createFaculty } from '../services/api';
 import {
   FlaskConical,
   Zap,
@@ -52,6 +52,7 @@ export default function StartScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [classroomCode, setClassroomCode] = useState('');
   const [classroomName, setClassroomName] = useState('');
   const [subject, setSubject] = useState('');
@@ -67,6 +68,7 @@ export default function StartScreen() {
     setName('');
     setEmail('');
     setPassword('');
+    setConfirmPassword('');
     setClassroomCode('');
     setClassroomName('');
     setSubject('');
@@ -82,39 +84,39 @@ export default function StartScreen() {
     setLoading(true);
     setError('');
     try {
-      const { student, classroom } = await loginStudent(email.trim(), password);
-      setStudent(student.name, student.id);
+      const { user } = await loginStudent(email.trim(), password);
+      setStudent(user.full_name, user.id);
       setRole('student');
-      if (classroom) setClassroom(classroom);
       setScreen('dashboard'); // Takes student directly to Student Portal Dashboard!
     } catch (err) {
       console.error(err);
-      setError('Invalid login details. Please try again.');
+      setError(err.message || 'Invalid login details. Please try again.');
       setLoading(false);
     }
   };
 
   // ── Student Sign Up (Register) ──
   const handleStudentSignup = async () => {
-    if (!name.trim() || !email.trim() || !password.trim()) {
-      setError('Please enter your full name, email, and password');
+    if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+      setError('Please fill out all fields');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
       return;
     }
     setLoading(true);
     setError('');
     try {
-      let classroom = null;
-      if (classroomCode.trim()) {
-        classroom = await getClassroomByCode(classroomCode.trim().toUpperCase());
-      }
-      const student = await createStudent(name.trim(), classroom?.id || null, email.trim());
-      setStudent(student.name, student.id);
-      setRole('student');
-      if (classroom) setClassroom(classroom);
-      setScreen('dashboard'); // Student Portal Dashboard
+      const res = await createStudent(name.trim(), email.trim(), password, confirmPassword);
+      // Don't attempt joinClassroom here — user must verify email first, then join after login
+      setError('');
+      setStep('student-login');
+      setError(res.message || 'Account created! Please check your email to verify before logging in.');
     } catch (err) {
       console.error(err);
-      setError('Failed to create account. Please try again.');
+      setError(err.message || 'Failed to create account. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
@@ -128,38 +130,42 @@ export default function StartScreen() {
     setLoading(true);
     setError('');
     try {
-      const { faculty, classroom } = await loginFaculty(email.trim(), password);
-      setStudent(faculty.name, faculty.id);
+      const { user } = await loginFaculty(email.trim(), password);
+      setStudent(user.full_name, user.id);
       setRole('faculty');
-      if (classroom) setClassroom(classroom);
       setScreen('faculty-dashboard');
     } catch (err) {
       console.error(err);
-      setError('Failed to log in. Please try again.');
+      setError(err.message || 'Failed to log in. Please try again.');
       setLoading(false);
     }
   };
 
   // ── Faculty: Sign Up (Create Account & Classroom) ──
   const handleFacultySignup = async () => {
-    if (!name.trim() || !email.trim() || !password.trim()) {
-      setError('Please enter your name, email, and password');
+    if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+      setError('Please fill out all fields');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
       return;
     }
     setLoading(true);
     setError('');
     try {
-      const facultyId = 'fac-' + email.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-      const clsTitle = classroomName.trim() ? (subject.trim() ? `${classroomName.trim()} — ${subject.trim()}` : classroomName.trim()) : `${name.trim()}'s Science Lab`;
-      const classroom = await createClassroom(clsTitle, name.trim(), facultyId);
+      const res = await createFaculty(name.trim(), email.trim(), password, confirmPassword);
       
-      setStudent(name.trim(), facultyId);
-      setRole('faculty');
-      setClassroom(classroom);
-      setScreen('faculty-dashboard');
+      const clsTitle = classroomName.trim() ? (subject.trim() ? `${classroomName.trim()} — ${subject.trim()}` : classroomName.trim()) : `${name.trim()}'s Science Lab`;
+      
+      // Wait, we can't create classroom yet because they need to verify email first to log in.
+      // They have to create it later in the dashboard.
+      setError(res.message || 'Account created! Please check your email to verify before logging in.');
+      setStep('faculty-login');
     } catch (err) {
       console.error(err);
-      setError('Failed to create classroom. Try again.');
+      setError(err.message || 'Failed to register. Try again.');
+    } finally {
       setLoading(false);
     }
   };
@@ -472,6 +478,22 @@ export default function StartScreen() {
               </div>
 
               <div className="auth-field">
+                <label htmlFor="student-signup-confirm-password" className="auth-label">Confirm Password</label>
+                <div className="auth-input-wrap">
+                  <span className="auth-input-icon"><Lock size={18} /></span>
+                  <input
+                    id="student-signup-confirm-password"
+                    type="password"
+                    className="auth-input"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                  />
+                </div>
+              </div>
+
+              <div className="auth-field">
                 <label htmlFor="student-signup-code" className="auth-label">Classroom Code <span className="optional-tag">(optional — can join inside portal)</span></label>
                 <div className="auth-input-wrap">
                   <span className="auth-input-icon"><KeyRound size={18} /></span>
@@ -665,6 +687,22 @@ export default function StartScreen() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                  />
+                </div>
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="faculty-signup-confirm-password" className="auth-label">Confirm Password</label>
+                <div className="auth-input-wrap">
+                  <span className="auth-input-icon"><Lock size={18} /></span>
+                  <input
+                    id="faculty-signup-confirm-password"
+                    type="password"
+                    className="auth-input"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     onKeyDown={handleKeyDown}
                   />
                 </div>

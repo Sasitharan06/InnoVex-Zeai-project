@@ -5,6 +5,7 @@ import StartScreen from './ui/StartScreen';
 import LabScene from './scene/LabScene';
 import Dashboard from './ui/Dashboard';
 import FacultyDashboard from './ui/FacultyDashboard';
+import ProtectedRoute from './ui/ProtectedRoute';
 
 const routeToScreenMap = {
   '/': 'landing',
@@ -38,9 +39,21 @@ export default function App() {
     <>
       {screen === 'landing' && <LandingPage />}
       {screen === 'start' && <StartScreen />}
-      {screen === 'lab' && <LabScene />}
-      {screen === 'dashboard' && <Dashboard />}
-      {screen === 'faculty-dashboard' && <FacultyDashboard />}
+      {screen === 'lab' && (
+        <ProtectedRoute allowedRoles={['student', 'faculty']}>
+          <LabScene />
+        </ProtectedRoute>
+      )}
+      {screen === 'dashboard' && (
+        <ProtectedRoute allowedRoles={['student']}>
+          <Dashboard />
+        </ProtectedRoute>
+      )}
+      {screen === 'faculty-dashboard' && (
+        <ProtectedRoute allowedRoles={['faculty']}>
+          <FacultyDashboard />
+        </ProtectedRoute>
+      )}
     </>
   );
 }

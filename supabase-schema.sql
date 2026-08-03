@@ -1,61 +1,99 @@
--- ZAED-004: AI Laboratory Simulator — Supabase Schema
--- Run this SQL in the Supabase SQL Editor (Dashboard > SQL Editor > New Query)
+-- ==========================================
+-- SUPABASE SCHEMA (Using Supabase Auth)
+-- ==========================================
 
--- ── Students Table ──
-create table if not exists students (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  email text unique,
-  created_at timestamp with time zone default now()
+-- 1. Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 2. Create Classrooms Table
+CREATE TABLE IF NOT EXISTS public.classrooms (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  code TEXT UNIQUE NOT NULL,
+  faculty_name TEXT NOT NULL,
+  faculty_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ── Classrooms Table ──
-create table if not exists classrooms (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  code text unique not null,
-  faculty_name text not null,
-  faculty_id uuid not null,
-  created_at timestamp with time zone default now()
+-- 3. Create Classroom Members Table
+CREATE TABLE IF NOT EXISTS public.classroom_members (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  classroom_id UUID REFERENCES public.classrooms(id) ON DELETE CASCADE,
+  student_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  student_name TEXT,
+  joined_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(classroom_id, student_id)
 );
 
--- ── Classroom Members Table ──
-create table if not exists classroom_members (
-  id uuid primary key default gen_random_uuid(),
-  classroom_id uuid references classrooms(id) on delete cascade,
-  student_id uuid references students(id) on delete cascade,
-  student_name text,
-  joined_at timestamp with time zone default now(),
-  unique(classroom_id, student_id)
+-- 4. Create Experiments Table
+CREATE TABLE IF NOT EXISTS public.experiments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  student_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  classroom_id UUID REFERENCES public.classrooms(id) ON DELETE SET NULL,
+  domain TEXT NOT NULL,
+  actions JSONB,
+  final_state JSONB,
+  score INTEGER,
+  ai_report JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ── Experiments Table ──
-create table if not exists experiments (
-  id uuid primary key default gen_random_uuid(),
-  student_id uuid references students(id) on delete cascade,
-  classroom_id uuid references classrooms(id) on delete set null,
-  domain text not null, -- 'chemistry' | 'physics'
-  actions jsonb,
-  final_state jsonb,
-  score integer,
-  ai_report jsonb,
-  created_at timestamp with time zone default now()
-);
+-- ==========================================
+-- ROW LEVEL SECURITY (RLS) POLICIES
+-- ==========================================
 
--- ── Indexes ──
-create index if not exists idx_experiments_student_id on experiments(student_id);
-create index if not exists idx_experiments_classroom_id on experiments(classroom_id);
-create index if not exists idx_classroom_members_classroom_id on classroom_members(classroom_id);
-create index if not exists idx_classrooms_code on classrooms(code);
+ALTER TABLE public.classrooms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.classroom_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.experiments ENABLE ROW LEVEL SECURITY;
 
--- ── Enable RLS (Row Level Security) — allow all for anon key (hackathon MVP) ──
-alter table students enable row level security;
-alter table classrooms enable row level security;
-alter table classroom_members enable row level security;
-alter table experiments enable row level security;
+-- Faculty can manage their own classrooms
+CREATE POLICY "Faculty can read own classrooms" 
+  ON public.classrooms FOR SELECT 
+  USING (auth.uid() = faculty_id);
 
--- Allow all operations for anon users (hackathon only — NOT for production)
-create policy "Allow all for students" on students for all using (true) with check (true);
-create policy "Allow all for classrooms" on classrooms for all using (true) with check (true);
-create policy "Allow all for classroom_members" on classroom_members for all using (true) with check (true);
-create policy "Allow all for experiments" on experiments for all using (true) with check (true);
+CREATE POLICY "Faculty can insert own classrooms" 
+  ON public.classrooms FOR INSERT 
+  WITH CHECK (auth.uid() = faculty_id);
+
+-- Students can read a classroom if they know the code (for joining)
+CREATE POLICY "Anyone can read classrooms" 
+  ON public.classrooms FOR SELECT 
+  USING (true);
+
+-- Classroom Members Policies
+CREATE POLICY "Students can read their own memberships" 
+  ON public.classroom_members FOR SELECT 
+  USING (auth.uid() = student_id);
+
+CREATE POLICY "Students can insert their own memberships" 
+  ON public.classroom_members FOR INSERT 
+  WITH CHECK (auth.uid() = student_id);
+
+CREATE POLICY "Faculty can read members of their classrooms" 
+  ON public.classroom_members FOR SELECT 
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.classrooms 
+      WHERE classrooms.id = classroom_members.classroom_id 
+      AND classrooms.faculty_id = auth.uid()
+    )
+  );
+
+-- Experiments Policies
+CREATE POLICY "Students can read own experiments" 
+  ON public.experiments FOR SELECT 
+  USING (auth.uid() = student_id);
+
+CREATE POLICY "Students can insert own experiments" 
+  ON public.experiments FOR INSERT 
+  WITH CHECK (auth.uid() = student_id);
+
+CREATE POLICY "Faculty can read experiments in their classrooms" 
+  ON public.experiments FOR SELECT 
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.classrooms 
+      WHERE classrooms.id = experiments.classroom_id 
+      AND classrooms.faculty_id = auth.uid()
+    )
+  );

@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import useGameStore from '../../store/gameStore';
 import { generateReport } from '../../services/aiReport';
-import { saveExperiment } from '../../services/supabase';
+import { saveExperiment } from '../../services/api';
 import ExperimentSelector from '../ExperimentSelector';
 import FlameTestExperiment from './FlameTestExperiment';
 import PHTestExperiment from './PHTestExperiment';

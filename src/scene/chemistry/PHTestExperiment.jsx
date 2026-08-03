@@ -2,7 +2,7 @@ import React from 'react';
 import * as THREE from 'three';
 import useGameStore from '../../store/gameStore';
 import { generateReport } from '../../services/aiReport';
-import { saveExperiment } from '../../services/supabase';
+import { saveExperiment } from '../../services/api';
 
 const SOLUTIONS = [
   { id: 'hcl', label: 'HCl', pH: 1, color: '#ff2222' },

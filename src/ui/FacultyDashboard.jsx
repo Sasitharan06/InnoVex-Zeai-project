@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import useGameStore from '../store/gameStore';
-import { getClassroomMembers, getClassroomExperiments } from '../services/supabase';
+import { getClassroomMembers, getClassroomExperiments, logout, getFacultyClassrooms, createClassroom } from '../services/api';
 import AILoader from './AILoader';
 import {
   FlaskConical,
@@ -47,29 +47,56 @@ export default function FacultyDashboard() {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [activeTab, setActiveTab] = useState('students'); // 'students' | 'analytics'
   const [copied, setCopied] = useState(false);
+  const [creatingClassroom, setCreatingClassroom] = useState(false);
+  const [newClassroomName, setNewClassroomName] = useState('');
+  const setClassroom = useGameStore((s) => s.setClassroom);
 
   const fetchData = useCallback(async () => {
-    if (!classroom?.id) return;
     setLoading(true);
     try {
-      const [membersData, experimentsData] = await Promise.all([
-        getClassroomMembers(classroom.id),
-        getClassroomExperiments(classroom.id),
-      ]);
-      setMembers(membersData);
-      setExperiments(experimentsData);
-      setLastRefresh(new Date());
+      let currentClassroom = classroom;
+      if (!currentClassroom?.id) {
+        const classrooms = await getFacultyClassrooms();
+        if (classrooms.length > 0) {
+          currentClassroom = classrooms[0];
+          setClassroom(currentClassroom);
+        }
+      }
+
+      if (currentClassroom?.id) {
+        const [membersData, experimentsData] = await Promise.all([
+          getClassroomMembers(currentClassroom.id),
+          getClassroomExperiments(currentClassroom.id),
+        ]);
+        setMembers(membersData);
+        setExperiments(experimentsData);
+        setLastRefresh(new Date());
+      }
     } catch (err) {
       console.error('Failed to fetch classroom data:', err);
     }
     setLoading(false);
-  }, [classroom?.id]);
+  }, [classroom, setClassroom]);
 
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 15000);
     return () => clearInterval(interval);
   }, [fetchData]);
+
+  const handleCreateClassroom = async () => {
+    if (!newClassroomName.trim()) return;
+    setCreatingClassroom(true);
+    try {
+      const newClass = await createClassroom(newClassroomName.trim());
+      setClassroom(newClass);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to create classroom');
+    }
+    setCreatingClassroom(false);
+  };
 
   const studentStats = members.map((member) => {
     const studentExps = experiments.filter(e => e.student_id === member.student_id);
@@ -151,7 +178,7 @@ export default function FacultyDashboard() {
               <div className="fd-user-role">Faculty</div>
             </div>
           </div>
-          <button className="fd-logout-btn" onClick={() => setScreen('start')} id="logout-btn">
+          <button className="fd-logout-btn" onClick={async () => { await logout(); setScreen('start'); }} id="logout-btn">
             <LogOut size={16} /> Logout
           </button>
         </div>
@@ -179,30 +206,57 @@ export default function FacultyDashboard() {
           </div>
         </header>
 
-        {/* ── Classroom Card (Google Classroom style) ── */}
-        <div className="fd-classroom-card" style={{ background: `linear-gradient(135deg, ${clr1}, ${clr2})` }}>
-          <div className="fd-classroom-card-bg" />
-          <div className="fd-classroom-card-content">
-            <div className="fd-classroom-card-top">
-              <div>
-                <div className="fd-cc-name">{classroom?.name || 'Virtual Lab'}</div>
-                <div className="fd-cc-teacher" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <School size={16} /> {studentName}
+        {/* ── Classroom Banner ── */}
+        {!classroom ? (
+          <div className="fd-classroom-card" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', padding: '2rem' }}>
+             <h2 style={{ color: 'white', marginBottom: '1rem' }}>Welcome, {studentName}!</h2>
+             <p style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '1.5rem' }}>You don't have a classroom yet. Let's create one.</p>
+             <div style={{ display: 'flex', gap: '1rem' }}>
+                <input 
+                  type="text" 
+                  placeholder="Enter Classroom Name" 
+                  value={newClassroomName}
+                  onChange={(e) => setNewClassroomName(e.target.value)}
+                  style={{ padding: '0.75rem', borderRadius: '8px', border: 'none', width: '300px', fontSize: '1rem' }}
+                />
+                <button 
+                  onClick={handleCreateClassroom} 
+                  disabled={creatingClassroom || !newClassroomName.trim()}
+                  style={{ background: 'white', color: '#6366f1', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  {creatingClassroom ? 'Creating...' : 'Create Classroom'}
+                </button>
+             </div>
+          </div>
+        ) : (
+          <div className="fd-classroom-card" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+            <div className="fd-classroom-card-bg" />
+            <div className="fd-classroom-card-content">
+              <div className="fd-classroom-card-top">
+                <div>
+                  <div className="fd-cc-name">{classroom.name}</div>
+                  <div className="fd-cc-teacher" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <School size={16} /> {studentName}
+                  </div>
+                </div>
+                <div className="fd-cc-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><School size={36} /></div>
+              </div>
+              <div className="fd-classroom-card-bottom" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: '1rem' }}>
+                <div className="fd-cc-code-section" style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div className="fd-cc-code-label">Class Code</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div className="fd-cc-code" style={{ letterSpacing: '4px', textShadow: 'none', background: 'rgba(0,0,0,0.2)', padding: '0.5rem 1rem', borderRadius: '8px' }}>
+                      {classroom.code}
+                    </div>
+                    <button className="fd-copy-btn" onClick={handleCopy} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'white', color: '#6366f1', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
+                      {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy Code</>}
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div className="fd-cc-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><School size={36} /></div>
-            </div>
-            <div className="fd-classroom-card-bottom">
-              <div className="fd-cc-code-section">
-                <div className="fd-cc-code-label">Class Code</div>
-                <div className="fd-cc-code">{classroom?.code || '------'}</div>
-              </div>
-              <button className="fd-copy-btn" onClick={handleCopy} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy Code</>}
-              </button>
             </div>
           </div>
-        </div>
+        )}
 
         {/* ── Stats Row ── */}
         <div className="fd-stats-grid">

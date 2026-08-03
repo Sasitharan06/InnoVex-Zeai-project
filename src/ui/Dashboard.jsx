@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import useGameStore from '../store/gameStore';
-import { getStudentExperiments, getClassroomByCode, createStudent } from '../services/supabase';
+import { getStudentExperiments, joinClassroom, logout } from '../services/api';
 import AILoader from './AILoader';
 import {
   FlaskConical,
@@ -39,9 +39,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function fetchExperiments() {
-      if (studentId) {
-        const data = await getStudentExperiments(studentId);
-        if (data.length > 0) setExperiments(data);
+      try {
+        if (studentId) {
+          const data = await getStudentExperiments(studentId);
+          if (data && data.length > 0) setExperiments(data);
+        }
+      } catch (err) {
+        console.warn('Could not fetch experiments:', err.message);
       }
       setLoading(false);
     }
@@ -57,19 +61,13 @@ export default function Dashboard() {
     setJoinError('');
     setJoinSuccess('');
     try {
-      const cls = await getClassroomByCode(joinCode.trim().toUpperCase());
-      if (!cls) {
-        setJoinError('Classroom not found. Please double-check the code with your teacher.');
-        setJoining(false);
-        return;
-      }
-      await createStudent(studentName || 'Student', cls.id);
+      const cls = await joinClassroom(joinCode.trim().toUpperCase());
       setClassroom(cls);
       setJoinSuccess(`Successfully joined ${cls.name}!`);
       setJoinCode('');
     } catch (err) {
       console.error(err);
-      setJoinError('Failed to join classroom. Please try again.');
+      setJoinError(err.message || 'Failed to join classroom. Please try again.');
     }
     setJoining(false);
   };
@@ -128,7 +126,7 @@ export default function Dashboard() {
               <div className="fd-user-role">Student Portal</div>
             </div>
           </div>
-          <button className="fd-logout-btn" onClick={() => setScreen('start')} id="logout-btn">
+          <button className="fd-logout-btn" onClick={async () => { await logout(); setScreen('start'); }} id="logout-btn">
             <LogOut size={16} /> Logout
           </button>
         </div>

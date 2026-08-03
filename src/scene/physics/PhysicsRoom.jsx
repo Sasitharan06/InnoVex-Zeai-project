@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import * as THREE from 'three';
 import useGameStore from '../../store/gameStore';
 import { generateReport } from '../../services/aiReport';
-import { saveExperiment } from '../../services/supabase';
+import { saveExperiment } from '../../services/api';
 import ExperimentSelector from '../ExperimentSelector';
 import OhmsLawExperiment from './OhmsLawExperiment';
 import PendulumExperiment from './PendulumExperiment';
