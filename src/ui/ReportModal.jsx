@@ -15,6 +15,15 @@ export default function ReportModal() {
   const recommendation = report.recommendation || report.next_suggested_experiment;
   const encouragement = report.encouragement;
 
+  // Robust array normalization for Feedback and Improvements
+  const feedbackList = Array.isArray(report.feedback)
+    ? report.feedback
+    : (typeof report.feedback === 'string' && report.feedback ? [report.feedback] : rightList);
+
+  const improvementList = Array.isArray(report.improvement_suggestions)
+    ? report.improvement_suggestions
+    : (Array.isArray(report.improvements) ? report.improvements : (recommendation ? [recommendation] : []));
+
   return (
     <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && closeReport()}>
       <div className="report-modal" id="report-modal">
@@ -116,14 +125,14 @@ export default function ReportModal() {
           </div>
         )}
 
-        {/* Step-by-Step Live Tracking Observations */}
-        {report.feedback && report.feedback.length > 0 && (
+        {/* Step-by-Step Live Tracking Observations & Feedback */}
+        {feedbackList.length > 0 && (
           <div className="report-section">
             <h3 style={{ color: '#fbbf24', fontSize: '0.88rem', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '8px' }}>
-              📍 Step-by-Step Live Tracking Observations
+              📍 Feedback & Live Tracking Observations
             </h3>
             <ul>
-              {report.feedback.map((item, i) => (
+              {feedbackList.map((item, i) => (
                 <li key={i} style={{ borderLeft: '3px solid #fbbf24' }}>{item}</li>
               ))}
             </ul>
@@ -131,13 +140,13 @@ export default function ReportModal() {
         )}
 
         {/* Practical Improvement Suggestions */}
-        {report.improvement_suggestions && report.improvement_suggestions.length > 0 && (
+        {improvementList.length > 0 && (
           <div className="report-section">
             <h3 style={{ color: '#60a5fa', fontSize: '0.88rem', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '8px' }}>
               🚀 Practical Improvement Suggestions
             </h3>
             <ul>
-              {report.improvement_suggestions.map((item, i) => (
+              {improvementList.map((item, i) => (
                 <li key={i} style={{ borderLeft: '3px solid #60a5fa' }}>{item}</li>
               ))}
             </ul>

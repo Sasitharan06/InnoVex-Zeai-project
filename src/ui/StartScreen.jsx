@@ -84,13 +84,19 @@ export default function StartScreen() {
     setLoading(true);
     setError('');
     try {
-      const { user } = await loginStudent(email.trim(), password);
-      setStudent(user.full_name, user.id);
+      const res = await loginStudent(email.trim(), password);
+      const studentData = res.student || res.user || {};
+      const studentName = studentData.full_name || studentData.name || email.trim().split('@')[0];
+      const studentId = studentData.id || 'st-' + Date.now();
+      
+      setStudent(studentName, studentId);
+      if (res.classroom) setClassroom(res.classroom);
       setRole('student');
-      setScreen('dashboard'); // Takes student directly to Student Portal Dashboard!
+      setScreen('dashboard');
     } catch (err) {
       console.error(err);
       setError(err.message || 'Invalid login details. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
@@ -109,7 +115,6 @@ export default function StartScreen() {
     setError('');
     try {
       const res = await createStudent(name.trim(), email.trim(), password, confirmPassword);
-      // Don't attempt joinClassroom here — user must verify email first, then join after login
       setError('');
       setStep('student-login');
       setError(res.message || 'Account created! Please check your email to verify before logging in.');
@@ -130,13 +135,19 @@ export default function StartScreen() {
     setLoading(true);
     setError('');
     try {
-      const { user } = await loginFaculty(email.trim(), password);
-      setStudent(user.full_name, user.id);
+      const res = await loginFaculty(email.trim(), password);
+      const facultyData = res.faculty || res.user || {};
+      const facultyName = facultyData.full_name || facultyData.name || email.trim().split('@')[0];
+      const facultyId = facultyData.id || 'fac-' + Date.now();
+
+      setStudent(facultyName, facultyId);
+      if (res.classroom) setClassroom(res.classroom);
       setRole('faculty');
       setScreen('faculty-dashboard');
     } catch (err) {
       console.error(err);
       setError(err.message || 'Failed to log in. Please try again.');
+    } finally {
       setLoading(false);
     }
   };

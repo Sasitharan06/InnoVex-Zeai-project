@@ -126,41 +126,50 @@ async function callLLM(domain, finalState) {
 import { generateExperimentFeedback } from './aiFeedbackEngine';
 
 /**
- * Main entry point — calls AI Feedback & Guidance Engine (Mistake detection + Behavioral signals + LLM/Local generator)
+ * Main entry point — calls AI Feedback & Guidance Engine (Mistake detection + Live tracking + LLM/Local generator)
  */
 export async function generateReport(domain, finalState, actionsLog = []) {
+  let report = null;
   try {
-    const feedbackReport = await generateExperimentFeedback(domain, finalState, actionsLog);
-    if (feedbackReport) {
-      return feedbackReport;
-    }
+    report = await generateExperimentFeedback(domain, finalState, actionsLog);
   } catch (err) {
-    console.warn('⚠️ AI Feedback Engine error, using local report fallback:', err);
+    console.warn('⚠️ AI Feedback Engine call notice:', err);
   }
 
-  // Fallback to local generation based on experiment type
-  const expType = finalState.experimentType;
-
-  if (expType === 'flame-test') return generateFlameTestReportLocal(finalState);
-  if (expType === 'ph-test') return generatePHTestReportLocal(finalState);
-  if (expType === 'precipitation') return generatePrecipitationReportLocal(finalState);
-  if (expType === 'iodine-clock') return generateIodineClockReportLocal(finalState);
-  if (expType === 'salt-prep') return generateSaltPrepReportLocal(finalState);
-  if (expType === 'electrolysis') return generateElectrolysisReportLocal(finalState);
-  if (expType === 'distillation') return generateDistillationReportLocal(finalState);
-  if (expType === 'circuit') return generateCircuitReportLocal(finalState);
-  if (expType === 'ohms-law') return generateOhmsLawReportLocal(finalState);
-  if (expType === 'pendulum') return generatePendulumReportLocal(finalState);
-  if (expType === 'projectile') return generateProjectileReportLocal(finalState);
-  if (expType === 'refraction') return generateRefractionReportLocal(finalState);
-  if (expType === 'induction') return generateInductionReportLocal(finalState);
-
-  if (domain === 'chemistry') {
-    return generateChemistryReportLocal(finalState);
-  } else if (domain === 'physics') {
-    return generatePhysicsReportLocal(finalState);
+  if (!report) {
+    const expType = finalState.experimentType;
+    if (expType === 'flame-test') report = generateFlameTestReportLocal(finalState);
+    else if (expType === 'ph-test') report = generatePHTestReportLocal(finalState);
+    else if (expType === 'precipitation') report = generatePrecipitationReportLocal(finalState);
+    else if (expType === 'iodine-clock') report = generateIodineClockReportLocal(finalState);
+    else if (expType === 'salt-prep') report = generateSaltPrepReportLocal(finalState);
+    else if (expType === 'electrolysis') report = generateElectrolysisReportLocal(finalState);
+    else if (expType === 'distillation') report = generateDistillationReportLocal(finalState);
+    else if (expType === 'circuit') report = generateCircuitReportLocal(finalState);
+    else if (expType === 'ohms-law') report = generateOhmsLawReportLocal(finalState);
+    else if (expType === 'pendulum') report = generatePendulumReportLocal(finalState);
+    else if (expType === 'projectile') report = generateProjectileReportLocal(finalState);
+    else if (expType === 'refraction') report = generateRefractionReportLocal(finalState);
+    else if (expType === 'induction') report = generateInductionReportLocal(finalState);
+    else if (domain === 'chemistry') report = generateChemistryReportLocal(finalState);
+    else report = generatePhysicsReportLocal(finalState);
   }
-  throw new Error(`Unknown domain: ${domain}`);
+
+  // Ensure feedback, improvement_suggestions, and confidence_note are always present
+  if (!report.feedback) {
+    report.feedback = report.strengths || [`Completed ${finalState.experimentType || domain} procedure.`];
+  }
+  if (!report.improvement_suggestions) {
+    report.improvement_suggestions = report.improvements || [report.recommendation || 'Review pre-lab formula guide and retry.'];
+  }
+  if (report.confidence_note === undefined) {
+    report.confidence_note = null;
+  }
+  if (!report.what_went_wrong) {
+    report.what_went_wrong = [];
+  }
+
+  return report;
 }
 
 // ── Local fallback generators ──────────────────────────────

@@ -216,10 +216,16 @@ function TitrationExperiment({ tablePos }) {
     };
     try {
       const report = await generateReport('chemistry', finalState, state.actions);
-      const saved = await saveExperiment(studentId, 'chemistry', state.actions, finalState, report.score, report, classroom?.id);
-      addExperiment({ ...saved, domain: 'chemistry', score: report.score, ai_report: report, created_at: saved.created_at || new Date().toISOString() });
       setReport(report);
       resetChemistry();
+      try {
+        const saved = await saveExperiment(studentId, 'chemistry', state.actions, finalState, report.score, report, classroom?.id);
+        if (saved) {
+          addExperiment({ ...saved, domain: 'chemistry', score: report.score, ai_report: report, created_at: saved.created_at || new Date().toISOString() });
+        }
+      } catch (saveErr) {
+        console.warn('Background save notice:', saveErr);
+      }
     } catch (err) {
       console.error('Report generation failed:', err);
     }

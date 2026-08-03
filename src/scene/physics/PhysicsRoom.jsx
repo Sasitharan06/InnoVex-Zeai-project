@@ -307,27 +307,30 @@ function CircuitBuildingExperiment({ tablePos }) {
 
     try {
       const report = await generateReport('physics', finalState, state.actions);
-
-      const saved = await saveExperiment(
-        studentId,
-        'physics',
-        state.actions,
-        finalState,
-        report.score,
-        report,
-        classroom?.id
-      );
-
-      addExperiment({
-        ...saved,
-        domain: 'physics',
-        score: report.score,
-        ai_report: report,
-        created_at: saved.created_at || new Date().toISOString(),
-      });
-
       setReport(report);
       resetPhysics();
+      try {
+        const saved = await saveExperiment(
+          studentId,
+          'physics',
+          state.actions,
+          finalState,
+          report.score,
+          report,
+          classroom?.id
+        );
+        if (saved) {
+          addExperiment({
+            ...saved,
+            domain: 'physics',
+            score: report.score,
+            ai_report: report,
+            created_at: saved.created_at || new Date().toISOString(),
+          });
+        }
+      } catch (saveErr) {
+        console.warn('Background save notice:', saveErr);
+      }
     } catch (err) {
       console.error('Report generation failed:', err);
     }

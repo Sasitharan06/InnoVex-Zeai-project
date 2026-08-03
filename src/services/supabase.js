@@ -311,6 +311,15 @@ export async function getClassroomByCode(code) {
   return null;
 }
 
+export async function joinClassroom(code, studentId = null, studentName = null) {
+  const cls = await getClassroomByCode(code);
+  if (!cls) throw new Error('Invalid classroom code');
+  if (studentId) {
+    await joinClassroomMember(cls.id, studentId, studentName);
+  }
+  return cls;
+}
+
 export async function getFacultyClassrooms(facultyId) {
   try {
     const { data, error } = await supabase
