@@ -1,0 +1,160 @@
+.fm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.fm-modal {
+  background: #fff;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+.fm-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+  color: #333;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.fm-close-btn:hover {
+  background: #fff;
+  transform: scale(1.1);
+}
+
+.fm-header {
+  position: relative;
+  width: 100%;
+  height: 250px;
+}
+
+.fm-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+}
+
+.fm-header-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 2rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+}
+
+.fm-title {
+  color: #fff;
+  font-family: 'Outfit', 'Poppins', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.fm-body {
+  padding: 2.5rem;
+  color: #333;
+}
+
+.fm-description {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #4b5563;
+  margin-bottom: 2rem;
+}
+
+.fm-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.fm-section-title {
+  font-family: 'Outfit', 'Poppins', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fm-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.fm-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+.fm-check {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* Custom Scrollbar */
+.fm-modal::-webkit-scrollbar {
+  width: 8px;
+}
+.fm-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+.fm-modal::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+  .fm-sections {
+    grid-template-columns: 1fr;
+  }
+  .fm-header {
+    height: 200px;
+  }
+  .fm-title {
+    font-size: 1.8rem;
+  }
+  .fm-body {
+    padding: 1.5rem;
+  }
+}

@@ -599,7 +599,7 @@ const useGameStore = create((set) => ({
 
   // ── Refraction (Snell's Law) Experiment ──
   refraction: {
-    incidentAngle: 30,
+    incidentAngle: 15,
     refractiveIndex: 1.5,
     beamActive: false,
     readings: [],
@@ -612,17 +612,37 @@ const useGameStore = create((set) => ({
   })),
   toggleRefractionBeam: () => set((state) => ({ refraction: { ...state.refraction, beamActive: !state.refraction.beamActive } })),
   takeRefractionReading: () => set((state) => {
-    const { incidentAngle, refractiveIndex } = state.refraction;
+    const { incidentAngle, refractiveIndex, readings } = state.refraction;
     const n1 = 1.0;
     const n2 = refractiveIndex;
     const theta1Rad = (incidentAngle * Math.PI) / 180;
-    const theta2Rad = Math.asin((n1 * Math.sin(theta1Rad)) / n2);
+    const sinI = Math.sin(theta1Rad);
+    const sinR = sinI / n2;
+    const theta2Rad = Math.asin(sinR);
     const theta2Deg = (theta2Rad * 180) / Math.PI;
-    const ratio = Math.sin(theta1Rad) / (Math.sin(theta2Rad) || 1);
+    const ratio = sinI / (sinR || 1);
+
+    // Prevent duplicate entries for same angle
+    const exists = readings.some((r) => r.incidentAngle === incidentAngle);
+    if (exists) {
+      return { refraction: { ...state.refraction, beamActive: true } };
+    }
+
     return {
       refraction: {
         ...state.refraction,
-        readings: [...state.refraction.readings, { incidentAngle, refractedAngle: theta2Deg.toFixed(1), ratio: ratio.toFixed(2) }],
+        beamActive: true,
+        readings: [
+          ...readings,
+          {
+            sno: readings.length + 1,
+            incidentAngle,
+            refractedAngle: Number(theta2Deg.toFixed(1)),
+            sinI: Number(sinI.toFixed(4)),
+            sinR: Number(sinR.toFixed(4)),
+            ratio: Number(ratio.toFixed(3)),
+          },
+        ],
         actions: [...state.refraction.actions, { type: 'take_reading', incidentAngle, refractedAngle: theta2Deg, time: Date.now() }],
       },
     };
@@ -631,7 +651,7 @@ const useGameStore = create((set) => ({
     refraction: { ...state.refraction, submitted: true },
   })),
   resetRefraction: () => set({
-    refraction: { incidentAngle: 30, refractiveIndex: 1.5, beamActive: false, readings: [], submitted: false, actions: [] },
+    refraction: { incidentAngle: 15, refractiveIndex: 1.5, beamActive: false, readings: [], submitted: false, actions: [] },
   }),
 
   // ── Electromagnetic Induction Experiment ──

@@ -73,18 +73,10 @@ export default function LabScene() {
   }, [showGuideModal, showReport, chatOpen]);
 
   useEffect(() => {
-    if (chatOpen) {
-      if (document.pointerLockElement) {
-        document.exitPointerLock?.();
-      }
-    } else {
-      // Re-acquire Pointer Lock automatically when chat is closed
-      const canvas = document.querySelector('canvas');
-      if (canvas && !showGuideModal && !showReport) {
-        canvas.requestPointerLock?.();
-      }
+    if (chatOpen && document.pointerLockElement) {
+      document.exitPointerLock?.();
     }
-  }, [chatOpen, showGuideModal, showReport]);
+  }, [chatOpen]);
 
   const handleLock = () => {
     setPointerLocked(true);

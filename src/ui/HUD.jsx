@@ -1043,56 +1043,74 @@ export default function HUD() {
 
       {/* Refraction (Snell's Law) */}
       {currentRoom === 'physics' && currentExp === 'refraction' && (
-        <div className="hud-readout" style={{ pointerEvents: 'auto', minWidth: '240px' }}>
-          <h3>Snell's Law (Refraction)</h3>
-          <div style={{ fontSize: '0.82rem', color: '#cbd5e1', marginBottom: '8px' }}>
-            Incident Angle (θ₁): <strong style={{ color: '#38bdf8' }}>{refraction.incidentAngle}°</strong><br />
-            Refracted Angle (θ₂): <strong style={{ color: '#10b981' }}>
-              {((Math.asin((1.0 * Math.sin((refraction.incidentAngle * Math.PI) / 180)) / 1.5) * 180) / Math.PI).toFixed(1)}°
-            </strong>
+        <div className="hud-readout" style={{ pointerEvents: 'auto', minWidth: '320px' }}>
+          <h3>Snell's Law (Refraction of Light)</h3>
+          
+          <div style={{ fontSize: '0.8rem', color: '#cbd5e1', marginBottom: '8px' }}>
+            Setup: <strong>Wooden Plank + White Chart + Semicircular Disc</strong><br />
+            Interface: <strong style={{ color: '#38bdf8' }}>MM Line</strong> &nbsp;|&nbsp; Normal: <strong style={{ color: '#ef4444' }}>NN Line at point O</strong>
           </div>
 
-          {/* ── Separate Angle Adjustment Step Buttons ── */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Incident Angle (θ₁):</span>
+          {/* Incident & Refracted Current Live Values */}
+          {(() => {
+            const radI = (refraction.incidentAngle * Math.PI) / 180;
+            const sinIVal = Math.sin(radI);
+            const sinRVal = sinIVal / 1.5;
+            const radR = Math.asin(sinRVal);
+            const degR = (radR * 180) / Math.PI;
+            const ratioVal = sinIVal / (sinRVal || 1);
+
+            return (
+              <div style={{
+                fontSize: '0.76rem',
+                background: 'rgba(15, 23, 42, 0.6)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                padding: '6px 10px',
+                borderRadius: '6px',
+                marginBottom: '10px',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <span>Incident Angle (<em>i</em>): <strong style={{ color: '#38bdf8' }}>{refraction.incidentAngle}°</strong></span>
+                  <span>Refracted Angle (<em>r</em>): <strong style={{ color: '#10b981' }}>{degR.toFixed(1)}°</strong></span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: '#94a3b8' }}>
+                  <span>sin <em>i</em> = <strong style={{ color: '#e2e8f0' }}>{sinIVal.toFixed(4)}</strong></span>
+                  <span>sin <em>r</em> = <strong style={{ color: '#e2e8f0' }}>{sinRVal.toFixed(4)}</strong></span>
+                  <span>sin <em>i</em> / sin <em>r</em> = <strong style={{ color: '#f59e0b' }}>{ratioVal.toFixed(3)}</strong></span>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ── Quick Preset Angle Selector (15°, 20°, 25°, 30°, 35°) ── */}
+          <div style={{ marginBottom: '10px' }}>
+            <div style={{ fontSize: '0.74rem', color: '#94a3b8', marginBottom: '4px', fontWeight: 600 }}>
+              Select Angle of Incidence (<em>i</em>):
+            </div>
             <div style={{ display: 'flex', gap: '4px' }}>
-              <button
-                onClick={() => adjustRefractionAngle(-5)}
-                style={{
-                  padding: '3px 8px',
-                  borderRadius: '4px',
-                  border: '1px solid #38bdf8',
-                  background: 'rgba(56, 189, 248, 0.2)',
-                  color: '#38bdf8',
-                  fontWeight: '700',
-                  fontSize: '0.75rem',
-                  cursor: 'pointer',
-                }}
-              >
-                -5°
-              </button>
-              <span style={{ fontSize: '0.78rem', color: '#fff', fontWeight: 'bold', width: '32px', textAlign: 'center' }}>
-                {refraction.incidentAngle}°
-              </span>
-              <button
-                onClick={() => adjustRefractionAngle(5)}
-                style={{
-                  padding: '3px 8px',
-                  borderRadius: '4px',
-                  border: '1px solid #38bdf8',
-                  background: 'rgba(56, 189, 248, 0.2)',
-                  color: '#38bdf8',
-                  fontWeight: '700',
-                  fontSize: '0.75rem',
-                  cursor: 'pointer',
-                }}
-              >
-                +5°
-              </button>
+              {[15, 20, 25, 30, 35].map((ang) => (
+                <button
+                  key={ang}
+                  onClick={() => setRefractionAngle(ang)}
+                  style={{
+                    flex: 1,
+                    padding: '4px 0',
+                    fontSize: '0.75rem',
+                    borderRadius: '4px',
+                    border: refraction.incidentAngle === ang ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.15)',
+                    background: refraction.incidentAngle === ang ? 'rgba(56,189,248,0.25)' : 'rgba(0,0,0,0.3)',
+                    color: refraction.incidentAngle === ang ? '#38bdf8' : '#cbd5e1',
+                    cursor: 'pointer',
+                    fontWeight: refraction.incidentAngle === ang ? 'bold' : 'normal',
+                  }}
+                >
+                  {ang}°
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Action Laser Beam Toggle & Record Button */}
+          {/* Action Laser Button */}
           <button
             onClick={() => {
               toggleRefractionBeam();
@@ -1100,23 +1118,59 @@ export default function HUD() {
             }}
             style={{
               width: '100%',
-              padding: '6px 10px',
+              padding: '7px 10px',
               borderRadius: '6px',
               border: `1px solid ${refraction.beamActive ? '#ef4444' : '#38bdf8'}`,
               background: refraction.beamActive ? '#ef4444' : '#38bdf8',
               color: '#fff',
               fontWeight: '800',
-              fontSize: '0.78rem',
+              fontSize: '0.8rem',
               cursor: 'pointer',
               marginBottom: '8px',
               boxShadow: '0 0 10px rgba(56, 189, 248, 0.4)',
             }}
           >
-            {refraction.beamActive ? '🛑 Turn OFF Laser Beam' : `⚡ Turn ON Laser Ray (${refraction.incidentAngle}°)`}
+            {refraction.beamActive ? '🛑 Turn OFF Laser' : `⚡ Shoot Laser Ray (i = ${refraction.incidentAngle}°) & Record`}
           </button>
 
+          {/* Observation Data Table */}
+          {refraction.readings && refraction.readings.length > 0 && (
+            <div style={{ fontSize: '0.72rem', color: '#cbd5e1', background: 'rgba(15,23,42,0.8)', padding: '6px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '8px' }}>
+              <div style={{ color: '#38bdf8', marginBottom: '4px', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between' }}>
+                <span>Snell's Law Observation Table ({refraction.readings.length}/5):</span>
+                <span style={{ color: '#f59e0b' }}>
+                  Mean n = {(refraction.readings.reduce((acc, curr) => acc + (curr.ratio || 1.5), 0) / refraction.readings.length).toFixed(3)}
+                </span>
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.7rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', color: '#94a3b8' }}>
+                    <th style={{ padding: '2px' }}>#</th>
+                    <th style={{ padding: '2px' }}>i (°)</th>
+                    <th style={{ padding: '2px' }}>r (°)</th>
+                    <th style={{ padding: '2px' }}>sin i</th>
+                    <th style={{ padding: '2px' }}>sin r</th>
+                    <th style={{ padding: '2px', color: '#f59e0b' }}>sin i / sin r</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {refraction.readings.map((r, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <td style={{ padding: '2px' }}>{i + 1}</td>
+                      <td style={{ padding: '2px', color: '#38bdf8' }}>{r.incidentAngle}°</td>
+                      <td style={{ padding: '2px', color: '#10b981' }}>{r.refractedAngle}°</td>
+                      <td style={{ padding: '2px' }}>{r.sinI || Math.sin((r.incidentAngle * Math.PI) / 180).toFixed(4)}</td>
+                      <td style={{ padding: '2px' }}>{r.sinR || (Math.sin((r.incidentAngle * Math.PI) / 180) / 1.5).toFixed(4)}</td>
+                      <td style={{ padding: '2px', color: '#f59e0b', fontWeight: 'bold' }}>{r.ratio}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
           {/* Submit Action Button */}
-          {refraction.beamActive && !refraction.submitted && (
+          {refraction.readings.length > 0 && !refraction.submitted && (
             <button
               onClick={async () => {
                 const state = useGameStore.getState().refraction;
@@ -1125,6 +1179,7 @@ export default function HUD() {
                 const theta2Deg = (theta2Rad * 180) / Math.PI;
                 const finalState = {
                   experimentType: 'refraction',
+                  procedure: 'Refraction through Semicircular Glass Disc',
                   incidentAngle: state.incidentAngle + '°',
                   refractedAngleComputed: theta2Deg.toFixed(1) + '°',
                   refractiveIndex: state.refractiveIndex,
@@ -1151,32 +1206,20 @@ export default function HUD() {
               }}
               style={{
                 width: '100%',
-                padding: '6px 10px',
+                padding: '8px 10px',
                 borderRadius: '6px',
                 border: '1px solid #10b981',
                 background: '#10b981',
                 color: '#fff',
                 fontWeight: '800',
-                fontSize: '0.78rem',
+                fontSize: '0.82rem',
                 cursor: 'pointer',
-                marginBottom: '8px',
+                marginBottom: '4px',
                 boxShadow: '0 0 10px rgba(16, 185, 129, 0.4)',
               }}
             >
-              Submit Snell's Law Data ✓
+              Submit Snell's Law Data Table ✓
             </button>
-          )}
-
-          {/* Live Readings Table */}
-          {refraction.readings && refraction.readings.length > 0 && (
-            <div style={{ fontSize: '0.72rem', color: '#cbd5e1', background: 'rgba(0,0,0,0.3)', padding: '6px', borderRadius: '4px' }}>
-              <div style={{ color: '#94a3b8', marginBottom: '2px', fontWeight: 'bold' }}>Recorded Data ({refraction.readings.length}):</div>
-              {refraction.readings.map((r, i) => (
-                <div key={i}>
-                  #{i + 1}: θ₁={r.incidentAngle}° ➔ θ₂={r.refractedAngle}° (sinθ₁/sinθ₂ = {r.ratio})
-                </div>
-              ))}
-            </div>
           )}
         </div>
       )}

@@ -356,27 +356,43 @@ Return ONLY valid JSON with no markdown syntax wrapping:
       if (response.ok) {
         const data = await response.json();
         let content = data.choices?.[0]?.message?.content || '';
-        content = content.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
-        const parsed = JSON.parse(content);
-        
-        useLiveTracker.getState().reset();
-
-        return {
-          ...parsed,
-          domain,
-          mistakes,
-          behavioralSignals,
-          liveTrackingSummary,
-        };
+        const parsed = safeJsonParse(content);
+        if (parsed) {
+          useLiveTracker.getState().reset();
+          return {
+            ...parsed,
+            domain,
+            mistakes,
+            behavioralSignals,
+            liveTrackingSummary,
+          };
+        }
       }
     } catch (err) {
-      console.warn('AI Feedback API call failed, falling back to rule-based engine:', err);
+      console.warn('AI Feedback API call notice, using rule-based engine fallback');
     }
   }
 
   const result = generateLocalFeedback(domain, finalState, mistakes, behavioralSignals, liveTrackingSummary);
   useLiveTracker.getState().reset();
   return result;
+}
+
+function safeJsonParse(text) {
+  if (!text) return null;
+  const match = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/(\{[\s\S]*\})/);
+  const raw = match ? match[1] : text;
+  try {
+    return JSON.parse(raw);
+  } catch (e1) {
+    try {
+      // Escape raw unescaped newlines inside string literals
+      const cleaned = raw.replace(/\n/g, '\\n').replace(/\r/g, '');
+      return JSON.parse(cleaned);
+    } catch (e2) {
+      return null;
+    }
+  }
 }
 
 /**
