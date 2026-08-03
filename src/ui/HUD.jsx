@@ -1,5 +1,7 @@
 import React from 'react';
 import useGameStore from '../store/gameStore';
+import { generateReport } from '../services/aiReport';
+import { saveExperiment } from '../services/supabase';
 
 export default function HUD() {
   const currentRoom = useGameStore((s) => s.currentRoom);
@@ -21,12 +23,19 @@ export default function HUD() {
   const refraction = useGameStore((s) => s.refraction);
   const induction = useGameStore((s) => s.induction);
   const pointerLocked = useGameStore((s) => s.pointerLocked);
+  const studentId = useGameStore((s) => s.studentId);
+  const classroom = useGameStore((s) => s.classroom);
 
   const setFlameGuess = useGameStore((s) => s.setFlameGuess);
   const setPHGuess = useGameStore((s) => s.setPHGuess);
   const setOhmsVoltage = useGameStore((s) => s.setOhmsVoltage);
   const setPendulumLength = useGameStore((s) => s.setPendulumLength);
   const setPendulumAngle = useGameStore((s) => s.setPendulumAngle);
+  const releasePendulum = useGameStore((s) => s.releasePendulum);
+  const togglePendulumTimer = useGameStore((s) => s.togglePendulumTimer);
+  const resetPendulum = useGameStore((s) => s.resetPendulum);
+  const setReport = useGameStore((s) => s.setReport);
+  const addExperiment = useGameStore((s) => s.addExperiment);
   const setProjectileAngle = useGameStore((s) => s.setProjectileAngle);
   const setProjectileVelocity = useGameStore((s) => s.setProjectileVelocity);
   const adjustProjectileAngle = useGameStore((s) => s.adjustProjectileAngle);
@@ -638,43 +647,214 @@ export default function HUD() {
 
       {/* Pendulum */}
       {currentRoom === 'physics' && currentExp === 'pendulum' && (
-        <div className="hud-readout" style={{ pointerEvents: 'auto' }}>
+        <div className="hud-readout" style={{ pointerEvents: 'auto', minWidth: '260px' }}>
           <h3>Simple Pendulum</h3>
-          <div style={{ fontSize: '0.82rem', color: '#cbd5e1', marginBottom: '6px' }}>
-            Length: <strong>{pendulum.length.toFixed(1)} m</strong> &nbsp;|&nbsp;
-            Angle: <strong>{pendulum.initialAngle}°</strong>
+          
+          <div style={{ fontSize: '0.8rem', color: '#cbd5e1', marginBottom: '8px' }}>
+            Length (L): <strong style={{ color: '#38bdf8' }}>{pendulum.length.toFixed(1)} m</strong> &nbsp;|&nbsp;
+            Angle (θ): <strong style={{ color: '#f472b6' }}>{pendulum.initialAngle}°</strong>
           </div>
-          {!pendulum.released && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '0.72rem', color: '#94a3b8', width: '45px' }}>Length:</span>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="2.0"
-                  step="0.1"
-                  value={pendulum.length}
-                  onChange={(e) => setPendulumLength(Number(e.target.value))}
-                  style={{ width: '90px', cursor: 'pointer' }}
-                />
+
+          {/* Formula Preview */}
+          <div style={{
+            fontSize: '0.72rem',
+            background: 'rgba(56, 189, 248, 0.1)',
+            borderLeft: '3px solid #38bdf8',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            marginBottom: '10px',
+            color: '#7dd3fc',
+          }}>
+            📐 Formula: <em>T = 2π√(L/g)</em> → Theoretical T: <strong>{(2 * Math.PI * Math.sqrt(pendulum.length / 9.81)).toFixed(2)} s</strong>
+          </div>
+
+          {!pendulum.released ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
+              {/* Length Controls */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
+                  <span style={{ fontSize: '0.74rem', color: '#94a3b8', fontWeight: 600 }}>Length (L):</span>
+                  <span style={{ fontSize: '0.74rem', color: '#38bdf8', fontWeight: 'bold' }}>{pendulum.length.toFixed(1)} m</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button
+                    onClick={() => setPendulumLength(Math.max(0.5, Number((pendulum.length - 0.1).toFixed(1))))}
+                    style={{
+                      padding: '2px 8px', borderRadius: '4px', border: '1px solid #38bdf8',
+                      background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', fontWeight: 'bold', fontSize: '0.75rem', cursor: 'pointer'
+                    }}
+                  >-0.1m</button>
+                  <input
+                    type="range" min="0.5" max="2.0" step="0.1"
+                    value={pendulum.length}
+                    onChange={(e) => setPendulumLength(Number(e.target.value))}
+                    style={{ flex: 1, cursor: 'pointer' }}
+                  />
+                  <button
+                    onClick={() => setPendulumLength(Math.min(2.0, Number((pendulum.length + 0.1).toFixed(1))))}
+                    style={{
+                      padding: '2px 8px', borderRadius: '4px', border: '1px solid #38bdf8',
+                      background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', fontWeight: 'bold', fontSize: '0.75rem', cursor: 'pointer'
+                    }}
+                  >+0.1m</button>
+                </div>
+                {/* Length Presets */}
+                <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                  {[0.5, 1.0, 1.5, 2.0].map((val) => (
+                    <button
+                      key={val}
+                      onClick={() => setPendulumLength(val)}
+                      style={{
+                        flex: 1, padding: '2px 0', fontSize: '0.68rem', borderRadius: '4px',
+                        border: pendulum.length === val ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.1)',
+                        background: pendulum.length === val ? 'rgba(56,189,248,0.25)' : 'rgba(0,0,0,0.2)',
+                        color: pendulum.length === val ? '#38bdf8' : '#94a3b8', cursor: 'pointer', fontWeight: pendulum.length === val ? 'bold' : 'normal'
+                      }}
+                    >
+                      {val}m
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '0.72rem', color: '#94a3b8', width: '45px' }}>Angle:</span>
-                <input
-                  type="range"
-                  min="10"
-                  max="60"
-                  step="5"
-                  value={pendulum.initialAngle}
-                  onChange={(e) => setPendulumAngle(Number(e.target.value))}
-                  style={{ width: '90px', cursor: 'pointer' }}
-                />
+
+              {/* Angle Controls */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
+                  <span style={{ fontSize: '0.74rem', color: '#94a3b8', fontWeight: 600 }}>Release Angle (θ):</span>
+                  <span style={{ fontSize: '0.74rem', color: '#f472b6', fontWeight: 'bold' }}>{pendulum.initialAngle}°</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button
+                    onClick={() => setPendulumAngle(Math.max(10, pendulum.initialAngle - 5))}
+                    style={{
+                      padding: '2px 8px', borderRadius: '4px', border: '1px solid #f472b6',
+                      background: 'rgba(244, 114, 182, 0.15)', color: '#f472b6', fontWeight: 'bold', fontSize: '0.75rem', cursor: 'pointer'
+                    }}
+                  >-5°</button>
+                  <input
+                    type="range" min="10" max="60" step="5"
+                    value={pendulum.initialAngle}
+                    onChange={(e) => setPendulumAngle(Number(e.target.value))}
+                    style={{ flex: 1, cursor: 'pointer' }}
+                  />
+                  <button
+                    onClick={() => setPendulumAngle(Math.min(60, pendulum.initialAngle + 5))}
+                    style={{
+                      padding: '2px 8px', borderRadius: '4px', border: '1px solid #f472b6',
+                      background: 'rgba(244, 114, 182, 0.15)', color: '#f472b6', fontWeight: 'bold', fontSize: '0.75rem', cursor: 'pointer'
+                    }}
+                  >+5°</button>
+                </div>
+                {/* Angle Presets */}
+                <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                  {[15, 30, 45, 60].map((val) => (
+                    <button
+                      key={val}
+                      onClick={() => setPendulumAngle(val)}
+                      style={{
+                        flex: 1, padding: '2px 0', fontSize: '0.68rem', borderRadius: '4px',
+                        border: pendulum.initialAngle === val ? '1px solid #f472b6' : '1px solid rgba(255,255,255,0.1)',
+                        background: pendulum.initialAngle === val ? 'rgba(244,114,182,0.25)' : 'rgba(0,0,0,0.2)',
+                        color: pendulum.initialAngle === val ? '#f472b6' : '#94a3b8', cursor: 'pointer', fontWeight: pendulum.initialAngle === val ? 'bold' : 'normal'
+                      }}
+                    >
+                      {val}°
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              {/* Release Action Button */}
+              <button
+                onClick={releasePendulum}
+                style={{
+                  marginTop: '4px', width: '100%', padding: '8px 12px', borderRadius: '8px',
+                  border: '1px solid #f59e0b', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                  color: '#ffffff', fontWeight: 'bold', fontSize: '0.82rem', cursor: 'pointer',
+                  boxShadow: '0 0 12px rgba(245, 158, 11, 0.4)'
+                }}
+              >
+                🎯 Release Pendulum
+              </button>
             </div>
-          )}
-          {pendulum.released && (
-            <div style={{ fontSize: '0.75rem', color: '#10b981' }}>
-              {pendulum.timerRunning ? '⏱️ Stopwatch running...' : (pendulum.timerStop ? '✅ 10 swings timed!' : 'Press E on Stop button after 10 swings')}
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{
+                fontSize: '0.78rem', padding: '6px 10px', borderRadius: '6px',
+                background: pendulum.timerRunning ? 'rgba(239, 68, 68, 0.15)' : (pendulum.timerStop ? 'rgba(16, 185, 129, 0.15)' : 'rgba(6, 182, 212, 0.15)'),
+                border: pendulum.timerRunning ? '1px solid #ef4444' : (pendulum.timerStop ? '1px solid #10b981' : '1px solid #06b6d4'),
+                color: pendulum.timerRunning ? '#fca5a5' : (pendulum.timerStop ? '#86efac' : '#7dd3fc')
+              }}>
+                {pendulum.timerRunning ? '⏱️ Stopwatch Running... Count 10 swings!' : (pendulum.timerStop ? '✅ 10 Oscillations Timed!' : 'Ready to time 10 oscillations')}
+              </div>
+
+              {/* Stopwatch Toggle Button */}
+              {!pendulum.timerStop && (
+                <button
+                  onClick={togglePendulumTimer}
+                  style={{
+                    width: '100%', padding: '7px 12px', borderRadius: '8px',
+                    border: pendulum.timerRunning ? '1px solid #ef4444' : '1px solid #06b6d4',
+                    background: pendulum.timerRunning ? '#ef4444' : '#06b6d4',
+                    color: '#ffffff', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer'
+                  }}
+                >
+                  {pendulum.timerRunning ? '⏹️ Stop Timer (after 10 swings)' : '⏱️ Start Stopwatch'}
+                </button>
+              )}
+
+              {/* Submit Button */}
+              {pendulum.timerStop && !pendulum.submitted && (
+                <button
+                  onClick={async () => {
+                    const measuredPeriod = pendulum.timerStart && pendulum.timerStop
+                      ? ((pendulum.timerStop - pendulum.timerStart) / 1000) / 10
+                      : 0;
+                    const calculatedPeriod = 2 * Math.PI * Math.sqrt(pendulum.length / 9.81);
+                    const percentError = calculatedPeriod > 0
+                      ? Math.abs(measuredPeriod - calculatedPeriod) / calculatedPeriod * 100
+                      : 100;
+
+                    const finalState = {
+                      experimentType: 'pendulum',
+                      length: pendulum.length,
+                      initialAngle: pendulum.initialAngle,
+                      measuredPeriod: measuredPeriod.toFixed(3),
+                      calculatedPeriod: calculatedPeriod.toFixed(3),
+                      percentError: percentError.toFixed(1),
+                    };
+
+                    try {
+                      const report = await generateReport('physics', finalState, pendulum.actions);
+                      const saved = await saveExperiment(studentId, 'physics', pendulum.actions, finalState, report.score, report, classroom?.id);
+                      addExperiment({ ...saved, domain: 'physics', score: report.score, ai_report: report, created_at: saved.created_at || new Date().toISOString() });
+                      setReport(report);
+                      resetPendulum();
+                    } catch (err) {
+                      console.error('Pendulum report failed:', err);
+                    }
+                  }}
+                  style={{
+                    width: '100%', padding: '8px 12px', borderRadius: '8px',
+                    border: '1px solid #10b981', background: '#10b981',
+                    color: '#ffffff', fontWeight: 'bold', fontSize: '0.82rem', cursor: 'pointer',
+                    boxShadow: '0 0 12px rgba(16, 185, 129, 0.4)'
+                  }}
+                >
+                  📊 Submit & View AI Assessment ✓
+                </button>
+              )}
+
+              <button
+                onClick={resetPendulum}
+                style={{
+                  width: '100%', padding: '4px 8px', borderRadius: '6px',
+                  border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.25)',
+                  color: '#cbd5e1', fontSize: '0.72rem', cursor: 'pointer', marginTop: '2px'
+                }}
+              >
+                🔄 Reset Pendulum
+              </button>
             </div>
           )}
         </div>

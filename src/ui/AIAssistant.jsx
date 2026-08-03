@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import useGameStore from '../store/gameStore';
 import { askVirtuLab, QUICK_ACTIONS } from '../services/grok';
+import { sendZEAIChatMessage } from '../services/zeaiChat';
 
 function renderMarkdown(text) {
   if (!text) return '';
@@ -173,9 +174,23 @@ export default function AIAssistant() {
     setIsLoading(true);
 
     try {
-      const apiHistory = newMessages.map(m => ({ role: m.role === 'error' ? 'assistant' : m.role, content: m.content }));
       const stateContext = getStoreSnapshot();
-      const response = await askVirtuLab(apiHistory, stateContext);
+      const studentId = useGameStore.getState().studentId;
+      const actionsLog = stateContext.chemistry?.actions || stateContext.physics?.actions || [];
+      
+      let response = '';
+      try {
+        response = await sendZEAIChatMessage({
+          experimentContext: stateContext,
+          actionsLog,
+          studentMessage: text,
+          messageHistory: newMessages.map(m => ({ role: m.role === 'error' ? 'assistant' : m.role, content: m.content })),
+          studentId,
+        });
+      } catch (e) {
+        const apiHistory = newMessages.map(m => ({ role: m.role === 'error' ? 'assistant' : m.role, content: m.content }));
+        response = await askVirtuLab(apiHistory, stateContext);
+      }
       
       setMessages((prev) => [...prev, { role: 'assistant', content: response }]);
       if (!chatOpen) {
@@ -235,13 +250,23 @@ export default function AIAssistant() {
             <h3>Chatbot Lab Mentor</h3>
             <span>Online • Real-time guidance</span>
           </div>
-          <button
-            className="vl-chat-clear"
-            onClick={() => setMessages([initialMessage])}
-            title="Clear Chat history"
-          >
-            🗑
-          </button>
+          <div className="vl-header-actions" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <button
+              className="vl-chat-clear"
+              onClick={() => setMessages([initialMessage])}
+              title="Clear Chat history"
+            >
+              🗑
+            </button>
+            <button
+              className="vl-chat-close"
+              onClick={() => setChatOpen(false)}
+              title="Close Chat Panel (Esc)"
+              id="vl-chat-close-btn"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         {/* Suggested Quick Prompts */}

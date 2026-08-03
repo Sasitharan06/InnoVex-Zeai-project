@@ -306,7 +306,7 @@ function CircuitBuildingExperiment({ tablePos }) {
     };
 
     try {
-      const report = await generateReport('physics', finalState);
+      const report = await generateReport('physics', finalState, state.actions);
 
       const saved = await saveExperiment(
         studentId,

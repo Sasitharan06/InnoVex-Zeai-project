@@ -397,7 +397,8 @@ export async function getClassroomMembers(classroomId) {
 
 // ── Experiments ──
 
-export async function saveExperiment(studentId, domain, actions, finalState, score, aiReport, classroomId = null) {
+export async function saveExperiment(studentId, domain, actions, finalState, score, aiReport, classroomId = null, feedback = null, liveTracking = null) {
+  const liveTrackingData = liveTracking || aiReport?.liveTrackingSummary || null;
   const expObj = {
     id: crypto.randomUUID(),
     student_id: studentId,
@@ -407,6 +408,8 @@ export async function saveExperiment(studentId, domain, actions, finalState, sco
     final_state: finalState,
     score,
     ai_report: aiReport,
+    feedback: feedback || aiReport,
+    live_tracking: liveTrackingData,
     created_at: new Date().toISOString()
   };
 
@@ -420,6 +423,8 @@ export async function saveExperiment(studentId, domain, actions, finalState, sco
       final_state: finalState,
       score,
       ai_report: aiReport,
+      feedback: feedback || aiReport,
+      live_tracking: liveTrackingData,
     };
     if (classroomId) insertData.classroom_id = classroomId;
 
@@ -436,6 +441,56 @@ export async function saveExperiment(studentId, domain, actions, finalState, sco
     console.warn('Supabase save notice:', err.message);
   }
   return expObj;
+}
+
+export async function saveChatLog(studentId, experimentId, message, role) {
+  const logObj = {
+    id: crypto.randomUUID(),
+    student_id: studentId,
+    experiment_id: experimentId,
+    message,
+    role,
+    created_at: new Date().toISOString()
+  };
+
+  try {
+    const localLogs = JSON.parse(localStorage.getItem('virtulab_chat_logs') || '[]');
+    localLogs.push(logObj);
+    localStorage.setItem('virtulab_chat_logs', JSON.stringify(localLogs));
+  } catch (e) {
+    console.warn('Failed to save chat log to localStorage:', e);
+  }
+
+  try {
+    if (studentId) {
+      await supabase.from('chat_logs').insert({
+        student_id: studentId,
+        experiment_id: experimentId,
+        message,
+        role
+      });
+    }
+  } catch (err) {
+    console.warn('Supabase chat log notice:', err.message);
+  }
+}
+
+export async function getChatLogs(studentId) {
+  try {
+    const { data } = await supabase
+      .from('chat_logs')
+      .select('*')
+      .eq('student_id', studentId)
+      .order('created_at', { ascending: true });
+    if (data && data.length > 0) return data;
+  } catch (e) {}
+
+  try {
+    const local = JSON.parse(localStorage.getItem('virtulab_chat_logs') || '[]');
+    return studentId ? local.filter(l => l.student_id === studentId) : local;
+  } catch (e) {
+    return [];
+  }
 }
 
 export async function getStudentExperiments(studentId) {
