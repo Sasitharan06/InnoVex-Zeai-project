@@ -205,13 +205,17 @@ function TitrationExperiment({ tablePos }) {
     const state = useGameStore.getState().chemistry;
     const finalState = {
       experimentType: 'titration',
+      domain: 'titration',
       volumeAdded: state.volumeAdded,
       equivalenceVolume: state.equivalenceVolume,
+      tolerance: 0.5,
+      indicatorAdded: state.indicatorAdded,
+      mixingOrderWrong: !state.indicatorAdded,
       timeTaken: state.startTime ? Math.round((Date.now() - state.startTime) / 1000) : 0,
       overshoot: state.volumeAdded > state.equivalenceVolume * 1.05,
     };
     try {
-      const report = await generateReport('chemistry', finalState);
+      const report = await generateReport('chemistry', finalState, state.actions);
       const saved = await saveExperiment(studentId, 'chemistry', state.actions, finalState, report.score, report, classroom?.id);
       addExperiment({ ...saved, domain: 'chemistry', score: report.score, ai_report: report, created_at: saved.created_at || new Date().toISOString() });
       setReport(report);

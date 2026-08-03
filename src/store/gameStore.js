@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useLiveTracker } from './liveTrackerStore';
 
 const routeToScreenMap = {
   '/': 'landing',
@@ -27,7 +28,7 @@ function getInitialScreen() {
   return routeToScreenMap[path] || 'landing';
 }
 
-const useGameStore = create((set, get) => ({
+const useGameStore = create((set) => ({
   // ── App State with HTML5 Route Sync ──
   screen: getInitialScreen(),
   setScreen: (screen, customPath) => {
@@ -80,30 +81,43 @@ const useGameStore = create((set, get) => ({
     actions: [],
   },
   
-  placeFlask: () => set((state) => ({
-    chemistry: { ...state.chemistry, flaskPlaced: true },
-    heldItem: null,
-  })),
+  placeFlask: () => {
+    useLiveTracker.getState().logEvent({ type: 'place_flask' });
+    set((state) => ({
+      chemistry: { ...state.chemistry, flaskPlaced: true },
+      heldItem: null,
+    }));
+  },
   
-  addIndicator: () => set((state) => ({
-    chemistry: {
-      ...state.chemistry,
-      indicatorAdded: true,
-      actions: [...state.chemistry.actions, { type: 'add_indicator', time: Date.now() }],
-    },
-    heldItem: null,
-  })),
+  addIndicator: () => {
+    useLiveTracker.getState().logEvent({ type: 'add_indicator' });
+    set((state) => ({
+      chemistry: {
+        ...state.chemistry,
+        indicatorAdded: true,
+        actions: [...state.chemistry.actions, { type: 'add_indicator', time: Date.now() }],
+      },
+      heldItem: null,
+    }));
+  },
   
-  startTitration: () => set((state) => ({
-    chemistry: {
-      ...state.chemistry,
-      startTime: Date.now(),
-      actions: [...state.chemistry.actions, { type: 'start_titration', time: Date.now() }],
-    },
-  })),
+  startTitration: () => {
+    useLiveTracker.getState().logEvent({ type: 'start_titration' });
+    set((state) => ({
+      chemistry: {
+        ...state.chemistry,
+        startTime: Date.now(),
+        actions: [...state.chemistry.actions, { type: 'start_titration', time: Date.now() }],
+      },
+    }));
+  },
   
   addTitrant: (amount = 0.5) => set((state) => {
     const newVolume = Math.min(state.chemistry.volumeAdded + amount, 50);
+    useLiveTracker.getState().logEvent({ type: 'add_titrant', amount, volume: newVolume });
+    if (newVolume > 25.5) {
+      useLiveTracker.getState().logWrongReading({ label: 'Titrant Volume', entered: `${newVolume.toFixed(1)} mL`, correct: '25.0 mL' });
+    }
     return {
       chemistry: {
         ...state.chemistry,
@@ -114,25 +128,34 @@ const useGameStore = create((set, get) => ({
     };
   }),
   
-  markEndpoint: () => set((state) => ({
-    chemistry: {
-      ...state.chemistry,
-      endpointMarked: true,
-      actions: [...state.chemistry.actions, { type: 'mark_endpoint', volume: state.chemistry.volumeAdded, time: Date.now() }],
-    },
-  })),
-  
-  resetChemistry: () => set({
-    chemistry: {
-      flaskPlaced: false,
-      indicatorAdded: false,
-      volumeAdded: 0,
-      equivalenceVolume: 25.0,
-      endpointMarked: false,
-      startTime: null,
-      actions: [],
-    },
+  markEndpoint: () => set((state) => {
+    useLiveTracker.getState().logEvent({ type: 'mark_endpoint', volume: state.chemistry.volumeAdded });
+    if (!state.chemistry.indicatorAdded) {
+      useLiveTracker.getState().logWrongMix({ entered: 'Titrant added without indicator dye', expected: 'Add Phenolphthalein indicator first' });
+    }
+    return {
+      chemistry: {
+        ...state.chemistry,
+        endpointMarked: true,
+        actions: [...state.chemistry.actions, { type: 'mark_endpoint', volume: state.chemistry.volumeAdded, time: Date.now() }],
+      },
+    };
   }),
+  
+  resetChemistry: () => {
+    useLiveTracker.getState().logRetry();
+    set({
+      chemistry: {
+        flaskPlaced: false,
+        indicatorAdded: false,
+        volumeAdded: 0,
+        equivalenceVolume: 25.0,
+        endpointMarked: false,
+        startTime: null,
+        actions: [],
+      },
+    });
+  },
 
   // ── Physics Experiment ──
   physics: {

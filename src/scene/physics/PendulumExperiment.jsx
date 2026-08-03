@@ -1,5 +1,6 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { Text } from '@react-three/drei';
 import * as THREE from 'three';
 import useGameStore from '../../store/gameStore';
 import { generateReport } from '../../services/aiReport';
@@ -100,6 +101,8 @@ function PendulumBob({ mountPos, length, initialAngle, released, releaseTime }) 
 // ── Main Component ──
 export default function PendulumExperiment({ tablePos }) {
   const pendulum = useGameStore((s) => s.pendulum);
+  const setPendulumLength = useGameStore((s) => s.setPendulumLength);
+  const setPendulumAngle = useGameStore((s) => s.setPendulumAngle);
   const releasePendulum = useGameStore((s) => s.releasePendulum);
   const togglePendulumTimer = useGameStore((s) => s.togglePendulumTimer);
   const setReport = useGameStore((s) => s.setReport);
@@ -130,7 +133,7 @@ export default function PendulumExperiment({ tablePos }) {
     };
 
     try {
-      const report = await generateReport('physics', finalState);
+      const report = await generateReport('physics', finalState, state.actions);
       const saved = await saveExperiment(
         studentId, 'physics', state.actions, finalState, report.score, report, classroom?.id
       );
@@ -156,60 +159,172 @@ export default function PendulumExperiment({ tablePos }) {
         releaseTime={pendulum.releaseTime}
       />
 
-      {/* Release button */}
-      {!pendulum.released && !pendulum.submitted && (
-        <group
-          position={[tablePos[0] + 1.0, 1.2, tablePos[2]]}
-          userData={{
-            interactable: true,
-            promptText: `Release Pendulum (L=${pendulum.length}m, θ=${pendulum.initialAngle}°)`,
-            onInteract: releasePendulum,
-          }}
-        >
-          <mesh castShadow>
-            <boxGeometry args={[0.22, 0.08, 0.12]} />
-            <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={0.3} />
-          </mesh>
-        </group>
-      )}
+      {/* ── Table-Side 3D Control Console ── */}
+      <group position={[tablePos[0] + 0.7, 1.01, tablePos[2]]}>
+        {/* Main Console Box Base */}
+        <mesh position={[0, 0.03, 0]} castShadow receiveShadow>
+          <boxGeometry args={[0.65, 0.06, 0.45]} />
+          <meshStandardMaterial color="#1e293b" metalness={0.8} roughness={0.2} />
+        </mesh>
 
-      {/* Timer start/stop button */}
-      {pendulum.released && !pendulum.submitted && (
-        <group
-          position={[tablePos[0] + 1.0, 1.0, tablePos[2]]}
-          userData={{
-            interactable: true,
-            promptText: pendulum.timerRunning ? 'Stop Timer (after 10 swings)' : 'Start Timer',
-            onInteract: togglePendulumTimer,
-          }}
+        {/* 3D Digital Screen Display */}
+        <mesh position={[0, 0.065, -0.12]} rotation={[-Math.PI / 6, 0, 0]}>
+          <boxGeometry args={[0.55, 0.12, 0.02]} />
+          <meshStandardMaterial color="#0f172a" emissive="#0284c7" emissiveIntensity={0.3} />
+        </mesh>
+        <Text
+          position={[0, 0.075, -0.1]}
+          rotation={[-Math.PI / 6, 0, 0]}
+          fontSize={0.045}
+          color="#38bdf8"
+          anchorX="center"
+          anchorY="middle"
         >
-          <mesh castShadow>
-            <boxGeometry args={[0.22, 0.08, 0.12]} />
-            <meshStandardMaterial
-              color={pendulum.timerRunning ? '#ef4444' : '#06b6d4'}
-              emissive={pendulum.timerRunning ? '#ef4444' : '#06b6d4'}
-              emissiveIntensity={0.4}
-            />
-          </mesh>
-        </group>
-      )}
+          {`L: ${pendulum.length.toFixed(1)}m  |  Angle: ${pendulum.initialAngle}°`}
+        </Text>
 
-      {/* Submit button (after timing done) */}
-      {pendulum.timerStop && !pendulum.submitted && (
-        <group
-          position={[tablePos[0] + 1.5, 1.2, tablePos[2] - 0.5]}
-          userData={{
-            interactable: true,
-            promptText: 'Submit Pendulum Result ✓',
-            onInteract: handleSubmit,
-          }}
-        >
-          <mesh castShadow>
-            <boxGeometry args={[0.25, 0.08, 0.15]} />
-            <meshStandardMaterial color="#10b981" emissive="#10b981" emissiveIntensity={0.3} />
-          </mesh>
-        </group>
-      )}
+        {/* ── 3D Table Buttons for Length (L) ── */}
+        {!pendulum.released && (
+          <>
+            {/* Decrease Length (-0.1m) */}
+            <group
+              position={[-0.2, 0.07, 0.02]}
+              userData={{
+                interactable: true,
+                promptText: `Decrease Length -0.1m (Current: ${pendulum.length.toFixed(1)}m)`,
+                onInteract: () => setPendulumLength(Math.max(0.5, Number((pendulum.length - 0.1).toFixed(1)))),
+              }}
+            >
+              <mesh castShadow>
+                <boxGeometry args={[0.11, 0.04, 0.1]} />
+                <meshStandardMaterial color="#0284c7" emissive="#0284c7" emissiveIntensity={0.4} />
+              </mesh>
+              <Text position={[0, 0.025, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.035} color="#ffffff" anchorX="center" anchorY="middle">
+                L -
+              </Text>
+            </group>
+
+            {/* Increase Length (+0.1m) */}
+            <group
+              position={[-0.07, 0.07, 0.02]}
+              userData={{
+                interactable: true,
+                promptText: `Increase Length +0.1m (Current: ${pendulum.length.toFixed(1)}m)`,
+                onInteract: () => setPendulumLength(Math.min(2.0, Number((pendulum.length + 0.1).toFixed(1)))),
+              }}
+            >
+              <mesh castShadow>
+                <boxGeometry args={[0.11, 0.04, 0.1]} />
+                <meshStandardMaterial color="#0284c7" emissive="#0284c7" emissiveIntensity={0.4} />
+              </mesh>
+              <Text position={[0, 0.025, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.035} color="#ffffff" anchorX="center" anchorY="middle">
+                L +
+              </Text>
+            </group>
+
+            {/* ── 3D Table Buttons for Angle (θ) ── */}
+            {/* Decrease Angle (-5°) */}
+            <group
+              position={[0.07, 0.07, 0.02]}
+              userData={{
+                interactable: true,
+                promptText: `Decrease Angle -5° (Current: ${pendulum.initialAngle}°)`,
+                onInteract: () => setPendulumAngle(Math.max(10, pendulum.initialAngle - 5)),
+              }}
+            >
+              <mesh castShadow>
+                <boxGeometry args={[0.11, 0.04, 0.1]} />
+                <meshStandardMaterial color="#db2777" emissive="#db2777" emissiveIntensity={0.4} />
+              </mesh>
+              <Text position={[0, 0.025, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.035} color="#ffffff" anchorX="center" anchorY="middle">
+                θ -
+              </Text>
+            </group>
+
+            {/* Increase Angle (+5°) */}
+            <group
+              position={[0.2, 0.07, 0.02]}
+              userData={{
+                interactable: true,
+                promptText: `Increase Angle +5° (Current: ${pendulum.initialAngle}°)`,
+                onInteract: () => setPendulumAngle(Math.min(60, pendulum.initialAngle + 5)),
+              }}
+            >
+              <mesh castShadow>
+                <boxGeometry args={[0.11, 0.04, 0.1]} />
+                <meshStandardMaterial color="#db2777" emissive="#db2777" emissiveIntensity={0.4} />
+              </mesh>
+              <Text position={[0, 0.025, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.035} color="#ffffff" anchorX="center" anchorY="middle">
+                θ +
+              </Text>
+            </group>
+          </>
+        )}
+
+        {/* ── Release Button ── */}
+        {!pendulum.released && !pendulum.submitted && (
+          <group
+            position={[0, 0.07, 0.14]}
+            userData={{
+              interactable: true,
+              promptText: `Release Pendulum (L=${pendulum.length}m, θ=${pendulum.initialAngle}°)`,
+              onInteract: releasePendulum,
+            }}
+          >
+            <mesh castShadow>
+              <boxGeometry args={[0.5, 0.04, 0.09]} />
+              <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={0.5} />
+            </mesh>
+            <Text position={[0, 0.025, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.038} color="#ffffff" anchorX="center" anchorY="middle">
+              🎯 Release Pendulum
+            </Text>
+          </group>
+        )}
+
+        {/* ── Timer Start/Stop Button ── */}
+        {pendulum.released && !pendulum.submitted && (
+          <group
+            position={[-0.1, 0.07, 0.1]}
+            userData={{
+              interactable: true,
+              promptText: pendulum.timerRunning ? 'Stop Timer (after 10 swings)' : 'Start Timer',
+              onInteract: togglePendulumTimer,
+            }}
+          >
+            <mesh castShadow>
+              <boxGeometry args={[0.26, 0.04, 0.12]} />
+              <meshStandardMaterial
+                color={pendulum.timerRunning ? '#ef4444' : '#06b6d4'}
+                emissive={pendulum.timerRunning ? '#ef4444' : '#06b6d4'}
+                emissiveIntensity={0.5}
+              />
+            </mesh>
+            <Text position={[0, 0.025, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.032} color="#ffffff" anchorX="center" anchorY="middle">
+              {pendulum.timerRunning ? '⏹ Stop Timer' : '⏱ Start Timer'}
+            </Text>
+          </group>
+        )}
+
+        {/* ── Submit Button ── */}
+        {pendulum.timerStop && !pendulum.submitted && (
+          <group
+            position={[0.15, 0.07, 0.1]}
+            userData={{
+              interactable: true,
+              promptText: 'Submit Pendulum Result ✓',
+              onInteract: handleSubmit,
+            }}
+          >
+            <mesh castShadow>
+              <boxGeometry args={[0.22, 0.04, 0.12]} />
+              <meshStandardMaterial color="#10b981" emissive="#10b981" emissiveIntensity={0.5} />
+            </mesh>
+            <Text position={[0, 0.025, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.032} color="#ffffff" anchorX="center" anchorY="middle">
+              📊 Submit ✓
+            </Text>
+          </group>
+        )}
+      </group>
     </group>
   );
 }

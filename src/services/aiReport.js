@@ -123,21 +123,19 @@ async function callLLM(domain, finalState) {
   return report;
 }
 
+import { generateExperimentFeedback } from './aiFeedbackEngine';
+
 /**
- * Main entry point — tries LLM first, falls back to local generation.
+ * Main entry point — calls AI Feedback & Guidance Engine (Mistake detection + Behavioral signals + LLM/Local generator)
  */
-export async function generateReport(domain, finalState) {
-  if (OPENROUTER_API_KEY) {
-    try {
-      console.log(`🤖 Calling OpenRouter LLM (${MODEL}) for ${domain} report...`);
-      const report = await callLLM(domain, finalState);
-      console.log('✅ LLM report generated successfully:', report);
-      return report;
-    } catch (err) {
-      console.warn('⚠️ LLM call failed, falling back to local generation:', err.message);
+export async function generateReport(domain, finalState, actionsLog = []) {
+  try {
+    const feedbackReport = await generateExperimentFeedback(domain, finalState, actionsLog);
+    if (feedbackReport) {
+      return feedbackReport;
     }
-  } else {
-    console.log('ℹ️ No OpenRouter API key found, using local report generation');
+  } catch (err) {
+    console.warn('⚠️ AI Feedback Engine error, using local report fallback:', err);
   }
 
   // Fallback to local generation based on experiment type
