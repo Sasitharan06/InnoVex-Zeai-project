@@ -19,6 +19,12 @@ export async function loginStudent(email, password) {
     email: studentData.email || email,
     role: 'student'
   };
+  
+  // Persist local session fallback
+  try {
+    localStorage.setItem('virtulab_session', JSON.stringify(normalized));
+  } catch(e) {}
+
   return {
     student: normalized,
     user: normalized,
@@ -38,6 +44,12 @@ export async function loginFaculty(email, password) {
     email: facultyData.email || email,
     role: 'faculty'
   };
+
+  // Persist local session fallback
+  try {
+    localStorage.setItem('virtulab_session', JSON.stringify(normalized));
+  } catch(e) {}
+
   return {
     faculty: normalized,
     user: normalized,
@@ -72,6 +84,10 @@ export async function createFaculty(name, email) {
 
 export async function logout() {
   try {
+    localStorage.removeItem('virtulab_session');
+  } catch(e) {}
+
+  try {
     if (supabase && supabase.auth) {
       await supabase.auth.signOut();
     }
@@ -95,6 +111,15 @@ export async function getSession() {
       };
     }
   } catch (e) {}
+
+  // Fallback to local session
+  try {
+    const localSession = localStorage.getItem('virtulab_session');
+    if (localSession) {
+      return JSON.parse(localSession);
+    }
+  } catch(e) {}
+
   return null;
 }
 

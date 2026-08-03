@@ -14,6 +14,17 @@ export default function ProtectedRoute({ children, allowedRoles }) {
     let isMounted = true;
     async function checkAuth() {
       try {
+        // 1. First check if we are already authenticated in the local store
+        const currentRole = useGameStore.getState().role;
+        if (currentRole && allowedRoles.includes(currentRole)) {
+          if (isMounted) {
+            setAuthorized(true);
+            setLoading(false);
+          }
+          return;
+        }
+
+        // 2. Fall back to Supabase session (e.g. on page refresh)
         const user = await getSession();
         if (isMounted) {
           if (user && allowedRoles.includes(user.role)) {
