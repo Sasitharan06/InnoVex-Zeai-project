@@ -1,10 +1,10 @@
-# 🧪 VirtuLab
+# 🧪 StepIn
 
 **Reimagining Science Education Through AI & Interactive 3D Laboratories**
 
-![VirtuLab Cover](public/hero_3d_lab.png)
+![StepIn Cover](public/hero_3d_lab.png)
 
-VirtuLab is a next-generation AI-powered virtual laboratory that transforms STEM education through immersive 3D simulations. Perform realistic chemistry and physics experiments, receive intelligent AI guidance, generate instant lab reports, and develop practical skills in a safe, browser-based environment—anytime, anywhere.
+StepIn is a next-generation AI-powered virtual laboratory that transforms STEM education through immersive 3D simulations. Perform realistic chemistry and physics experiments, receive intelligent AI guidance, generate instant lab reports, and develop practical skills in a safe, browser-based environment—anytime, anywhere.
 
 ---
 
@@ -23,7 +23,7 @@ VirtuLab is a next-generation AI-powered virtual laboratory that transforms STEM
 
 ## 💻 Tech Stack
 
-VirtuLab is built using modern, performant web technologies:
+StepIn is built using modern, performant web technologies:
 
 - **Frontend**: React 19, Vite
 - **3D Engine**: Three.js, React Three Fiber, React Three Drei
@@ -69,7 +69,7 @@ Follow these instructions to set up the project locally on your machine.
    ```
 
 5. **Open your browser:**
-   Navigate to `http://localhost:5173` to explore VirtuLab!
+   Navigate to `http://localhost:5173` to explore StepIn!
 
 ---
 
@@ -94,5 +94,5 @@ This project is licensed under the MIT License.
 ---
 
 <p align="center">
-  Made with ❤️ for the VirtuLab Hackathon 2026. <b>#MadeInIndia</b>
+  Made with ❤️ for the StepIn Hackathon 2026. <b>#MadeInIndia</b>
 </p>

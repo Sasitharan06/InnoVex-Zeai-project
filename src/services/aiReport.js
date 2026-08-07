@@ -77,7 +77,7 @@ async function callLLM(domain, finalState) {
       'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': window.location.origin,
-      'X-Title': 'VirtuLab Virtual Laboratory',
+      'X-Title': 'StepIn Virtual Laboratory',
     },
     body: JSON.stringify({
       model: MODEL,

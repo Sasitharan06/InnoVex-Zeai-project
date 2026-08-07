@@ -175,17 +175,17 @@ return (
             🏆 AI-POWERED IMMERSIVE STEM EDUCATION PLATFORM
           </div>
           <h1 className="lp-hero-title">
-            <span className="lp-hero-gradient">VirtuLab</span>
+            <span className="lp-hero-gradient">StepIn</span>
             <br />
             <span className="lp-hero-sub">Reimagining Science Education Through AI & Interactive 3D Laboratories</span>
           </h1>
           <p className="lp-hero-desc">
-            VirtuLab is a next-generation AI-powered virtual laboratory that transforms STEM education through immersive 3D simulations. Perform realistic chemistry and physics experiments, receive intelligent AI guidance, generate instant lab reports, and develop practical skills in a safe, browser-based environment—anytime, anywhere.
+            StepIn is a next-generation AI-powered virtual laboratory that transforms STEM education through immersive 3D simulations. Perform realistic chemistry and physics experiments, receive intelligent AI guidance, generate instant lab reports, and develop practical skills in a safe, browser-based environment—anytime, anywhere.
           </p>
 
           <div className="lp-hero-actions">
             <button className="lp-btn lp-btn-primary" onClick={() => setScreen('start')}>
-              🚀 Launch VirtuLab
+              🚀 Launch StepIn
             </button>
             <a href="#experiments" className="lp-btn lp-btn-ghost">
               🧪 Explore Experiments
@@ -203,7 +203,7 @@ return (
         <div className="lp-hero-visual">
           <img
             src="/hero_3d_lab.png"
-            alt="VirtuLab 3D Virtual Lab"
+            alt="StepIn 3D Virtual Lab"
             className="lp-hero-img"
             style={{ transform: `translateY(${scrollY * -0.08}px)` }}
           />
@@ -299,14 +299,14 @@ return (
           <div className="lp-pro-footer-brand-col">
             <div className="lp-footer-brand">
               <FlaskConical size={24} style={{ color: '#8b5cf6' }} />
-              <span style={{ fontSize: '1.4rem' }}>VirtuLab</span>
+              <span style={{ fontSize: '1.4rem' }}>StepIn</span>
             </div>
             <p className="lp-pro-footer-desc">
               Reimagining Science Education Through AI & Interactive 3D Laboratories. 
               Start experimenting in minutes.
             </p>
             <button className="lp-btn lp-btn-cta" style={{ marginTop: '1.5rem', width: 'fit-content' }} onClick={() => setScreen('start')}>
-              <Rocket size={18} /> Launch VirtuLab
+              <Rocket size={18} /> Launch StepIn
             </button>
             <div className="lp-cta-meta" style={{ marginTop: '1rem', justifyContent: 'flex-start' }}>
               <span><ShieldCheck size={14} /> Secure</span>
@@ -340,7 +340,7 @@ return (
         </div>
 
         <div className="lp-pro-footer-bottom">
-          <span className="lp-footer-copy">© 2026 VirtuLab — Virtual Laboratory Simulator. All rights reserved.</span>
+          <span className="lp-footer-copy">© 2026 StepIn — Virtual Laboratory Simulator. All rights reserved.</span>
           <div className="lp-footer-socials">
             <span className="lp-made-in-india"><GraduationCap size={16}/> #MadeInIndia</span>
           </div>

@@ -29,7 +29,7 @@ export async function loginStudent(email, password) {
   const name = data.user.user_metadata?.full_name || email.split('@')[0];
   const user = { id: data.user.id, email: data.user.email, role: 'student', full_name: name, name };
   try {
-    localStorage.setItem('virtulab_session', JSON.stringify(user));
+    localStorage.setItem('stepin_session', JSON.stringify(user));
   } catch(e) {}
   return { user, student: user };
 }
@@ -44,7 +44,7 @@ export async function loginFaculty(email, password) {
   const name = data.user.user_metadata?.full_name || email.split('@')[0];
   const user = { id: data.user.id, email: data.user.email, role: 'faculty', full_name: name, name };
   try {
-    localStorage.setItem('virtulab_session', JSON.stringify(user));
+    localStorage.setItem('stepin_session', JSON.stringify(user));
   } catch(e) {}
   return { user, faculty: user };
 }
@@ -75,7 +75,7 @@ export async function createFaculty(fullName, email, password, confirmPassword) 
 
 export async function logout() {
   try {
-    localStorage.removeItem('virtulab_session');
+    localStorage.removeItem('stepin_session');
   } catch (e) {}
   try {
     if (supabase && supabase.auth) {
@@ -101,7 +101,7 @@ export async function getSession() {
   } catch (e) {}
 
   try {
-    const localSession = localStorage.getItem('virtulab_session');
+    const localSession = localStorage.getItem('stepin_session');
     if (localSession) {
       return JSON.parse(localSession);
     }
@@ -216,9 +216,9 @@ export async function saveExperiment(arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
   };
 
   try {
-    const existing = JSON.parse(localStorage.getItem('virtulab_experiments') || '[]');
+    const existing = JSON.parse(localStorage.getItem('stepin_experiments') || '[]');
     existing.unshift(localSaved);
-    localStorage.setItem('virtulab_experiments', JSON.stringify(existing));
+    localStorage.setItem('stepin_experiments', JSON.stringify(existing));
   } catch (e) {}
 
   try {
@@ -253,7 +253,7 @@ export async function getStudentExperiments() {
     if (res.ok) return await res.json();
   } catch (e) {}
   try {
-    return JSON.parse(localStorage.getItem('virtulab_experiments') || '[]');
+    return JSON.parse(localStorage.getItem('stepin_experiments') || '[]');
   } catch (e) {
     return [];
   }
@@ -267,7 +267,7 @@ export async function getClassroomExperiments(classroomId) {
     if (res.ok) return await res.json();
   } catch (e) {}
   try {
-    const all = JSON.parse(localStorage.getItem('virtulab_experiments') || '[]');
+    const all = JSON.parse(localStorage.getItem('stepin_experiments') || '[]');
     return classroomId ? all.filter(e => e.classroom_id === classroomId) : all;
   } catch (e) {
     return [];

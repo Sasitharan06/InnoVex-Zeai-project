@@ -118,13 +118,13 @@ export default function LabScene() {
       {/* Pre-Lab Experiment Guide Modal */}
       <ExperimentGuideModal />
 
-      {/* VirtuLab AI Lab Mentor Chat */}
+      {/* StepIn AI Lab Mentor Chat */}
       <AIAssistant />
 
       {/* Click to lock prompt */}
       {!chatOpen && !pointerLocked && (
         <div className="lock-overlay" onClick={() => controlsRef.current?.lock()}>
-          <h2>🔬 VirtuLab Virtual Laboratory</h2>
+          <h2>🔬 StepIn Virtual Laboratory</h2>
           <p>Click anywhere to enter the lab</p>
           <p style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#64748b' }}>
             WASD to move • Mouse to look • E to interact • ESC to unlock

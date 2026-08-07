@@ -1,5 +1,5 @@
 /**
- * VirtuLab AI Lab Mentor — Grok API / OpenRouter Chat Service
+ * StepIn AI Lab Mentor — Grok API / OpenRouter Chat Service
  * Provides real-time, context-aware experiment guidance using Grok LLM.
  * Maintains conversation history for multi-turn chat within a session.
  */
@@ -18,7 +18,7 @@ If you are unsure, clearly say that additional verification is required.
 
 # PLATFORM CONTEXT
 
-Platform Name: VirtuLab – AI Powered Virtual STEM Laboratory
+Platform Name: StepIn – AI Powered Virtual STEM Laboratory
 
 Students perform experiments inside an interactive 3D laboratory built using Three.js and React.
 The laboratory contains Chemistry and Physics experiments.
@@ -201,12 +201,12 @@ export const QUICK_ACTIONS = [
 ];
 
 /**
- * Ask the VirtuLab AI Mentor using Grok or OpenRouter API.
+ * Ask the StepIn AI Mentor using Grok or OpenRouter API.
  * @param {Array} messageHistory - The chat history array
  * @param {Object} stateContext - The current experiment state context
  * @returns {Promise<string>} The AI's reply
  */
-export async function askVirtuLab(messageHistory, stateContext) {
+export async function askStepIn(messageHistory, stateContext) {
   const grokKey = import.meta.env.VITE_GROK_API_KEY;
   const openRouterKey = import.meta.env.VITE_OPENROUTER_API_KEY;
   const apiKey = grokKey || openRouterKey;
@@ -230,7 +230,7 @@ export async function askVirtuLab(messageHistory, stateContext) {
 
   if (isOpenRouter) {
     headers['HTTP-Referer'] = window.location.origin;
-    headers['X-Title'] = 'VirtuLab';
+    headers['X-Title'] = 'StepIn';
   }
 
   // Construct message history including the active state context

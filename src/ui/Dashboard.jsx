@@ -94,7 +94,7 @@ export default function Dashboard() {
         <div className="fd-sidebar-top">
           <div className="fd-brand">
             <span className="fd-brand-icon" style={{ color: '#8b5cf6', display: 'inline-flex' }}><FlaskConical size={22} /></span>
-            <span className="fd-brand-name">VirtuLab</span>
+            <span className="fd-brand-name">StepIn</span>
           </div>
           <nav className="fd-nav">
             <button

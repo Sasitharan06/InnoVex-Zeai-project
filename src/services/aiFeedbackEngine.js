@@ -336,7 +336,7 @@ Return ONLY valid JSON with no markdown syntax wrapping:
       };
       if (OPENROUTER_API_KEY && !GROK_API_KEY) {
         headers['HTTP-Referer'] = window.location.origin;
-        headers['X-Title'] = 'VirtuLab';
+        headers['X-Title'] = 'StepIn';
       }
 
       const response = await fetch(url, {

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import useGameStore from '../store/gameStore';
-import { askVirtuLab, QUICK_ACTIONS } from '../services/grok';
+import { askStepIn, QUICK_ACTIONS } from '../services/grok';
 import { sendZEAIChatMessage } from '../services/zeaiChat';
 
 function renderMarkdown(text) {
@@ -189,7 +189,7 @@ export default function AIAssistant() {
         });
       } catch (e) {
         const apiHistory = newMessages.map(m => ({ role: m.role === 'error' ? 'assistant' : m.role, content: m.content }));
-        response = await askVirtuLab(apiHistory, stateContext);
+        response = await askStepIn(apiHistory, stateContext);
       }
       
       setMessages((prev) => [...prev, { role: 'assistant', content: response }]);
@@ -288,7 +288,7 @@ export default function AIAssistant() {
           {messages.length === 0 && !isLoading && (
             <div className="vl-welcome">
               <span className="vl-welcome-icon">👋</span>
-              <h4>Hello! I'm VirtuLab Lab Mentor.</h4>
+              <h4>Hello! I'm StepIn Lab Mentor.</h4>
               <p>I can help you with:</p>
               <ul>
                 <li>Explain concepts & equations</li>
@@ -340,7 +340,7 @@ export default function AIAssistant() {
             ref={inputRef}
             type="text"
             className="vl-chat-input"
-            placeholder="Ask VirtuLab anything..."
+            placeholder="Ask StepIn anything..."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
